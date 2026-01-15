@@ -1,16 +1,78 @@
-# React + Vite
+# LawLens - AI Powered Legal Awareness Platform
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+LawLens is an AI-powered Indian legal awareness platform designed to help citizens understand their legal rights. It maps natural language incident descriptions to relevant Indian Penal Code (IPC) sections, providing clear, jargon-free explanations.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+-   **AI Incident Analysis**: Describe an incident in plain English to get relevant IPC sections.
+-   **Privacy First**: No data storage. Queries are processed statelessly.
+-   **IPC Library**: Browse and search the complete Indian Penal Code.
+-   **Google Authentication**: Secure, anonymous sign-in to access the dashboard.
+-   **Profile Management**: View your account details and usage stats.
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+-   **Frontend**: React, Vite
+-   **Styling**: Vanilla CSS, Lucide React (Icons)
+-   **Authentication**: Google OAuth 2.0 (`@react-oauth/google`)
+-   **Routing**: React Router DOM
 
-## Expanding the ESLint configuration
+## Getting Started
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Prerequisites
+
+-   Node.js (v18+)
+-   npm
+
+### Installation
+
+1.  Clone the repository:
+    ```bash
+    git clone https://github.com/yourusername/LawLens.git
+    cd LawLens/frontend
+    ```
+
+2.  Install dependencies:
+    ```bash
+    npm install
+    ```
+
+3.  Configure Environment Variables:
+    -   Copy `.env.example` to `.env`.
+    -   Add your `VITE_GOOGLE_CLIENT_ID`.
+    ```bash
+    cp .env.example .env
+    ```
+
+4.  Run the development server:
+    ```bash
+    npm run dev
+    ```
+
+## Project Structure
+
+```
+src/
+├── components/
+│   └── Layout/          # Sidebar, DashboardLayout
+├── context/
+│   └── AuthContext.jsx  # Authentication state management
+├── pages/
+│   ├── Dashboard/       # Dashboard sub-pages (Home, Discover, Profile)
+│   ├── LandingPage.jsx  # Public landing page
+│   └── SignIn.jsx       # Login page
+├── App.jsx              # Main routing configuration
+└── main.jsx             # Entry point & Providers
+```
+
+## Contributing
+
+1.  Fork the repository.
+2.  Create a feature branch (`git checkout -b feature/amazing-feature`).
+3.  Commit your changes (`git commit -m 'Add amazing feature'`).
+4.  Push to the branch (`git push origin feature/amazing-feature`).
+5.  Open a Pull Request.
+
+## License
+
+This project is licensed under the MIT License.
