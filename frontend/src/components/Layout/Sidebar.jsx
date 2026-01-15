@@ -1,8 +1,15 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
-import { Home, Compass, MessageSquare, Bug, Twitter, Mail, LogOut, Gavel } from 'lucide-react';
+import { NavLink, Link, useNavigate } from 'react-router-dom';
+import { Home, Compass, MessageSquare, Bug, Twitter, Mail, LogOut, Scale } from 'lucide-react';
 
 const Sidebar = () => {
+    const navigate = useNavigate();
+
+    const handleSignOut = () => {
+        // Clear tokens here if needed
+        navigate('/');
+    };
+
     const navItems = [
         {
             category: 'GENERAL',
@@ -29,10 +36,11 @@ const Sidebar = () => {
 
     return (
         <div className="sidebar">
-            <div className="sidebar-header">
-                <Gavel size={28} color="var(--color-accent)" />
+            {/* 1. Brand -> Landing Page */}
+            <Link to="/" className="sidebar-header">
+                <Scale size={28} className="text-accent" />
                 <span className="brand-name">LawLens</span>
-            </div>
+            </Link>
 
             <nav className="sidebar-nav">
                 {navItems.map((section, idx) => (
@@ -42,8 +50,10 @@ const Sidebar = () => {
                             <NavLink
                                 key={i}
                                 to={item.path}
-                                className={({ isActive }) => `nav-item ${isActive && item.path !== '#' ? 'active' : ''}`}
-                                end={item.path === '/dashboard'} // Exact match for home
+                                className={({ isActive }) => 
+                                    `nav-item ${isActive && item.path !== '#' ? 'active' : ''}`
+                                }
+                                end={item.path === '/dashboard'}
                             >
                                 {item.icon}
                                 <span>{item.label}</span>
@@ -54,92 +64,170 @@ const Sidebar = () => {
             </nav>
 
             <div className="sidebar-footer">
-                <button className="nav-item logout-btn">
+                {/* 2. User Profile -> Profile Page */}
+                <Link to="/dashboard/profile" className="user-profile">
+                    <div className="avatar">JD</div>
+                    <div className="user-info">
+                        <span className="name">John Doe</span>
+                        <span className="role">Free Plan</span>
+                    </div>
+                </Link>
+                
+                {/* 3. Sign Out -> Landing Page */}
+                <button onClick={handleSignOut} className="logout-btn">
                     <LogOut size={20} />
-                    <span>Sign Out</span>
                 </button>
             </div>
 
             <style>{`
-        .sidebar {
-          width: 260px;
-          height: 100vh;
-          background: var(--color-surface);
-          border-right: 1px solid var(--color-border);
-          display: flex;
-          flex-direction: column;
-          padding: var(--spacing-lg);
-          position: fixed;
-          left: 0;
-          top: 0;
-        }
+                :root {
+                    --bg-sidebar: rgba(15, 23, 42, 0.95);
+                    --color-border: rgba(255, 255, 255, 0.1);
+                    --color-accent: #F59E0B;
+                    --color-primary: #3B82F6;
+                    --text-main: #F8FAFC;
+                    --text-muted: #94A3B8;
+                    --font-heading: 'Merriweather', serif;
+                    --font-body: 'Inter', sans-serif;
+                }
 
-        .sidebar-header {
-          display: flex;
-          align-items: center;
-          gap: var(--spacing-sm);
-          margin-bottom: var(--spacing-xl);
-          padding-left: var(--spacing-sm);
-        }
+                .sidebar {
+                    width: 260px;
+                    height: 100vh;
+                    background: var(--bg-sidebar);
+                    border-right: 1px solid var(--color-border);
+                    display: flex;
+                    flex-direction: column;
+                    padding: 1.5rem;
+                    position: fixed;
+                    left: 0;
+                    top: 0;
+                    z-index: 50;
+                    backdrop-filter: blur(10px);
+                }
 
-        .brand-name {
-          font-family: var(--font-heading);
-          font-weight: 700;
-          font-size: 1.25rem;
-          color: var(--color-primary);
-        }
+                /* Header */
+                .sidebar-header {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.75rem;
+                    margin-bottom: 2.5rem;
+                    padding-left: 0.5rem;
+                    text-decoration: none;
+                    transition: opacity 0.2s;
+                }
+                .sidebar-header:hover { opacity: 0.8; }
 
-        .nav-section {
-          margin-bottom: var(--spacing-lg);
-        }
+                .brand-name {
+                    font-family: var(--font-heading);
+                    font-weight: 700;
+                    font-size: 1.5rem;
+                    color: var(--text-main);
+                    letter-spacing: -0.02em;
+                }
+                .text-accent { color: var(--color-accent); }
 
-        .nav-section-title {
-          font-size: 0.75rem;
-          font-weight: 600;
-          color: var(--color-text-muted);
-          margin-bottom: var(--spacing-sm);
-          padding-left: var(--spacing-sm);
-          letter-spacing: 0.5px;
-        }
+                /* Navigation */
+                .nav-section { margin-bottom: 2rem; }
 
-        .nav-item {
-          display: flex;
-          align-items: center;
-          gap: var(--spacing-md);
-          padding: 0.75rem var(--spacing-sm);
-          color: var(--color-text-muted);
-          border-radius: var(--radius-md);
-          transition: all 0.2s;
-          font-weight: 500;
-          width: 100%;
-          text-align: left;
-        }
+                .nav-section-title {
+                    font-size: 0.7rem;
+                    font-weight: 700;
+                    color: rgba(148, 163, 184, 0.6);
+                    margin-bottom: 0.75rem;
+                    padding-left: 0.75rem;
+                    letter-spacing: 1px;
+                    text-transform: uppercase;
+                }
 
-        .nav-item:hover {
-          background: var(--color-background);
-          color: var(--color-primary);
-        }
+                .nav-item {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.75rem;
+                    padding: 0.75rem;
+                    color: var(--text-muted);
+                    border-radius: 8px;
+                    transition: all 0.2s;
+                    font-weight: 500;
+                    text-decoration: none;
+                    font-family: var(--font-body);
+                    font-size: 0.95rem;
+                }
 
-        .nav-item.active {
-          background: #EFF6FF; /* specialized lighter blue */
-          color: var(--color-accent);
-        }
+                .nav-item:hover {
+                    background: rgba(255, 255, 255, 0.05);
+                    color: var(--text-main);
+                }
 
-        .sidebar-footer {
-          margin-top: auto;
-          border-top: 1px solid var(--color-border);
-          padding-top: var(--spacing-md);
-        }
-        
-        .logout-btn {
-          color: #EF4444;
-        }
-        
-        .logout-btn:hover {
-          background: #FEF2F2;
-          color: #DC2626;
-        }
-      `}</style>
+                .nav-item.active {
+                    background: rgba(245, 158, 11, 0.1); /* Gold tint */
+                    color: var(--color-accent);
+                    font-weight: 600;
+                }
+
+                /* Footer */
+                .sidebar-footer {
+                    margin-top: auto;
+                    border-top: 1px solid var(--color-border);
+                    padding-top: 1.5rem;
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                }
+                
+                .user-profile {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.75rem;
+                    text-decoration: none;
+                    flex: 1;
+                    padding: 0.5rem;
+                    border-radius: 8px;
+                    transition: background 0.2s;
+                }
+                .user-profile:hover {
+                    background: rgba(255,255,255,0.05);
+                }
+
+                .avatar {
+                    width: 36px; height: 36px;
+                    background: var(--color-primary);
+                    border-radius: 50%;
+                    display: flex; align-items: center; justify-content: center;
+                    font-weight: 700; font-size: 0.85rem;
+                    color: white;
+                }
+
+                .user-info {
+                    display: flex; flex-direction: column;
+                }
+                .name { font-size: 0.9rem; font-weight: 600; color: var(--text-main); }
+                .role { font-size: 0.75rem; color: var(--text-muted); }
+                
+                .logout-btn {
+                    background: transparent;
+                    border: none;
+                    color: var(--text-muted);
+                    cursor: pointer;
+                    padding: 0.5rem;
+                    border-radius: 6px;
+                    transition: 0.2s;
+                }
+                
+                .logout-btn:hover {
+                    background: rgba(239, 68, 68, 0.1);
+                    color: #EF4444;
+                }
+
+                @media (max-width: 768px) {
+                    .sidebar { width: 70px; padding: 1.5rem 0.5rem; align-items: center; }
+                    .brand-name, .nav-item span, .nav-section-title, .user-info { display: none; }
+                    .sidebar-header { margin-bottom: 2rem; padding-left: 0; }
+                    .nav-item { justify-content: center; padding: 0.75rem; }
+                    .sidebar-footer { flex-direction: column; gap: 1rem; }
+                    .user-profile { padding: 0; justify-content: center; }
+                }
+            `}</style>
         </div>
     );
 };

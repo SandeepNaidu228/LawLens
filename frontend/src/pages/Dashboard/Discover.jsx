@@ -1,11 +1,47 @@
 import React, { useState } from 'react';
-import { Search, ChevronRight, X } from 'lucide-react';
+import { Search, ChevronRight, X, Gavel, Shield, AlertTriangle, Book } from 'lucide-react';
 
 const mockIPC = [
-    { id: 'ipc-500', section: 'Section 500', title: 'Punishment for defamation', desc: 'Punishment for defamation with simple imprisonment for a term which may extend to two years, or with fine, or with both.' },
-    { id: 'ipc-299', section: 'Section 299', title: 'Culpable Homicide', desc: 'Whoever causes death by doing an act with the intention of causing death, or with the intention of causing such bodily injury as is likely to cause death.' },
-    { id: 'ipc-124a', section: 'Section 124A', title: 'Sedition', desc: 'Whoever brings or attempts to bring into hatred or contempt, or excites or attempts to excite disaffection towards the Government established by law in India.' },
-    { id: 'ipc-307', section: 'Section 307', title: 'Attempt to murder', desc: 'Whoever does any act with such intention or knowledge, and under such circumstances that, if he by that act caused death, he would be guilty of murder.' },
+    { 
+        id: 'ipc-500', 
+        section: 'Section 500', 
+        title: 'Punishment for Defamation', 
+        desc: 'Punishment for defamation with simple imprisonment for a term which may extend to two years, or with fine, or with both.',
+        type: 'Non-Cognizable',
+        bailable: 'Bailable'
+    },
+    { 
+        id: 'ipc-302', 
+        section: 'Section 302', 
+        title: 'Punishment for Murder', 
+        desc: 'Whoever commits murder shall be punished with death, or imprisonment for life, and shall also be liable to fine.',
+        type: 'Cognizable',
+        bailable: 'Non-Bailable'
+    },
+    { 
+        id: 'ipc-378', 
+        section: 'Section 378', 
+        title: 'Theft', 
+        desc: 'Whoever, intending to take dishonestly any movable property out of the possession of any person without that person\'s consent, moves that property in order to such taking, is said to commit theft.',
+        type: 'Cognizable',
+        bailable: 'Non-Bailable'
+    },
+    { 
+        id: 'ipc-420', 
+        section: 'Section 420', 
+        title: 'Cheating and Dishonestly Inducing Delivery', 
+        desc: 'Whoever cheats and thereby dishonestly induces the person deceived to deliver any property to any person, or to make, alter or destroy the whole or any part of a valuable security.',
+        type: 'Cognizable',
+        bailable: 'Non-Bailable'
+    },
+    { 
+        id: 'ipc-124a', 
+        section: 'Section 124A', 
+        title: 'Sedition', 
+        desc: 'Whoever, by words, either spoken or written, or by signs, or by visible representation, or otherwise, brings or attempts to bring into hatred or contempt the Government established by law.',
+        type: 'Cognizable',
+        bailable: 'Non-Bailable'
+    },
 ];
 
 const Discover = () => {
@@ -18,52 +54,93 @@ const Discover = () => {
     );
 
     return (
-        <div className="discover-page">
+        <div className="discover-container animate-fade-in">
             <header className="page-header">
-                <h1>Discover IPC Sections</h1>
-                <p className="subtitle">Browse through the Indian Penal Code database.</p>
+                <h1>IPC Library</h1>
+                <p className="subtitle">Search the authoritative database of Indian Penal Code sections.</p>
             </header>
 
-            <div className="search-bar-container">
-                <Search className="search-icon" size={20} />
-                <input
-                    type="text"
-                    className="search-input"
-                    placeholder="Search by section number or title..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                />
+            {/* Large Search Area */}
+            <div className="search-section">
+                <div className="search-bar-wrapper">
+                    <Search className="search-icon" size={22} />
+                    <input
+                        type="text"
+                        className="search-input"
+                        placeholder="Search by Section Number (e.g. 302) or Offense Name..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+                <p className="search-hint">Try searching for "Theft", "Fraud", or specific section numbers.</p>
             </div>
 
+            {/* Grid Results */}
             <div className="ipc-grid">
                 {filteredIPC.map((ipc) => (
-                    <div key={ipc.id} className="card ipc-card" onClick={() => setSelectedIPC(ipc)}>
-                        <div className="card-badge">{ipc.section}</div>
+                    <div key={ipc.id} className="ipc-card" onClick={() => setSelectedIPC(ipc)}>
+                        <div className="card-header">
+                            <span className="section-badge">{ipc.section}</span>
+                            <ChevronRight size={18} className="arrow-icon" />
+                        </div>
                         <h3>{ipc.title}</h3>
-                        <p className="truncate-2-lines">{ipc.desc}</p>
-                        <span className="learn-more">Learn more <ChevronRight size={16} /></span>
+                        <p className="truncate-text">{ipc.desc}</p>
+                        <div className="card-footer">
+                            <div className="mini-tag">
+                                <Shield size={12} /> {ipc.type}
+                            </div>
+                        </div>
                     </div>
                 ))}
+                {filteredIPC.length === 0 && (
+                     <div className="empty-state">
+                         <Book size={48} className="empty-icon"/>
+                         <p>No IPC sections found matching "{searchTerm}"</p>
+                     </div>
+                )}
             </div>
 
-            {/* Modal */}
+            {/* Detailed Modal Overlay */}
             {selectedIPC && (
-                <div className="modal-overlay" onClick={() => setSelectedIPC(null)}>
+                <div className="modal-backdrop" onClick={() => setSelectedIPC(null)}>
                     <div className="modal-content" onClick={e => e.stopPropagation()}>
                         <button className="close-btn" onClick={() => setSelectedIPC(null)}>
                             <X size={24} />
                         </button>
+                        
                         <div className="modal-header">
-                            <span className="modal-badge">{selectedIPC.section}</span>
+                            <span className="modal-section-badge">{selectedIPC.section}</span>
                             <h2>{selectedIPC.title}</h2>
                         </div>
-                        <div className="modal-body">
-                            <h4>Description</h4>
-                            <p>{selectedIPC.desc}</p>
 
-                            <div className="punishment-box">
-                                <h4>Punishment</h4>
-                                <p>Information about punishment and cognizable/non-cognizable nature would go here.</p>
+                        <div className="modal-body">
+                            <div className="legal-text-box">
+                                <div className="icon-title">
+                                    <Book size={18} className="text-accent" /> Legal Definition
+                                </div>
+                                <p>{selectedIPC.desc}</p>
+                            </div>
+
+                            <div className="info-grid">
+                                <div className="info-item">
+                                    <label>Nature of Offense</label>
+                                    <div className="value-row">
+                                        <Shield size={18} className="text-green" />
+                                        <span>{selectedIPC.type}</span>
+                                    </div>
+                                </div>
+                                <div className="info-item">
+                                    <label>Bail Status</label>
+                                    <div className="value-row">
+                                        <AlertTriangle size={18} className="text-amber" />
+                                        <span>{selectedIPC.bailable}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="punishment-section">
+                                <h4><Gavel size={16}/> Punishment Prescribed</h4>
+                                <p>Imprisonment for a term which may extend to the duration specified in the specific subsection, or fine, or both.</p>
                             </div>
                         </div>
                     </div>
@@ -71,168 +148,247 @@ const Discover = () => {
             )}
 
             <style>{`
-                .search-bar-container {
-                    position: relative;
-                    margin-bottom: 2rem;
-                    max-width: 600px;
+                :root {
+                    --color-bg: #0F172A;
+                    --color-bg-card: #1E293B;
+                    --color-primary: #3B82F6;
+                    --color-accent: #F59E0B;
+                    --color-text-main: #F8FAFC;
+                    --color-text-muted: #94A3B8;
+                    --color-border: rgba(255, 255, 255, 0.1);
+                    --font-heading: 'Merriweather', serif;
+                    --font-body: 'Inter', sans-serif;
                 }
 
-                .search-icon {
-                    position: absolute;
-                    left: 1rem;
-                    top: 50%;
-                    transform: translateY(-50%);
-                    color: var(--color-text-muted);
+                .discover-container {
+                    width: 100%;
+                    max-width: 1200px;
+                    margin: 0 auto;
                 }
 
+                /* Header */
+                .page-header { margin-bottom: 3rem; text-align: center; }
+                .page-header h1 { 
+                    font-family: var(--font-heading); 
+                    font-size: 2.5rem; 
+                    margin-bottom: 0.5rem; 
+                    color: var(--color-text-main);
+                }
+                .subtitle { color: var(--color-text-muted); font-size: 1.1rem; }
+
+                /* Search Area */
+                .search-section { margin-bottom: 3rem; display: flex; flex-direction: column; align-items: center; }
+                .search-bar-wrapper { 
+                    position: relative; 
+                    width: 100%;
+                    max-width: 600px; 
+                }
+                .search-icon { 
+                    position: absolute; 
+                    left: 1.5rem; 
+                    top: 50%; 
+                    transform: translateY(-50%); 
+                    color: var(--color-text-muted); 
+                }
                 .search-input {
                     width: 100%;
-                    padding: 1rem 1rem 1rem 3rem;
+                    background: var(--color-bg-card);
                     border: 1px solid var(--color-border);
-                    border-radius: var(--radius-full);
-                    font-size: 1rem;
-                    font-family: var(--font-sans);
+                    padding: 1.25rem 1.25rem 1.25rem 4rem;
+                    border-radius: 50px;
+                    color: white;
+                    font-size: 1.1rem;
                     transition: all 0.2s;
-                    box-shadow: var(--shadow-sm);
+                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
                 }
-
                 .search-input:focus {
                     outline: none;
-                    border-color: var(--color-accent);
-                    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+                    border-color: var(--color-primary);
+                    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
                 }
+                .search-hint { margin-top: 1rem; font-size: 0.85rem; color: #64748B; }
 
+                /* Grid */
                 .ipc-grid {
                     display: grid;
-                    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+                    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
                     gap: 1.5rem;
                 }
 
                 .ipc-card {
+                    background: rgba(30, 41, 59, 0.4);
+                    border: 1px solid var(--color-border);
+                    border-radius: 16px;
+                    padding: 1.5rem;
                     cursor: pointer;
-                    transition: transform 0.2s, box-shadow 0.2s;
+                    transition: all 0.3s;
+                    position: relative;
+                    overflow: hidden;
+                    display: flex; flex-direction: column;
                 }
 
                 .ipc-card:hover {
-                    transform: translateY(-2px);
-                    box-shadow: var(--shadow-md);
-                    border-color: var(--color-accent);
+                    transform: translateY(-5px);
+                    border-color: var(--color-primary);
+                    background: var(--color-bg-card);
+                    box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.4);
                 }
 
-                .card-badge {
-                    display: inline-block;
-                    font-size: 0.75rem;
-                    font-weight: 700;
-                    color: var(--color-text-muted);
-                    background: var(--color-background);
-                    padding: 0.25rem 0.5rem;
-                    border-radius: 4px;
-                    margin-bottom: 0.75rem;
-                }
-
-                .ipc-card h3 {
-                    font-size: 1.125rem;
-                    margin-bottom: 0.5rem;
-                }
-
-                .truncate-2-lines {
-                    display: -webkit-box;
-                    -webkit-line-clamp: 2;
-                    -webkit-box-orient: vertical;
-                    overflow: hidden;
-                    color: var(--color-text-muted);
-                    font-size: 0.95rem;
+                .card-header {
+                    display: flex; justify-content: space-between; align-items: center;
                     margin-bottom: 1rem;
                 }
 
-                .learn-more {
+                .section-badge {
+                    background: rgba(245, 158, 11, 0.1);
                     color: var(--color-accent);
-                    font-size: 0.875rem;
-                    font-weight: 500;
-                    display: flex;
-                    align-items: center;
-                    gap: 0.25rem;
+                    font-weight: 700; font-size: 0.8rem;
+                    padding: 0.25rem 0.75rem; border-radius: 6px;
+                }
+                
+                .arrow-icon { color: var(--color-text-muted); opacity: 0; transition: 0.2s; }
+                .ipc-card:hover .arrow-icon { opacity: 1; transform: translateX(5px); }
+
+                .ipc-card h3 {
+                    font-size: 1.2rem; font-weight: 600; margin-bottom: 0.75rem;
+                    color: var(--color-text-main); font-family: var(--font-heading);
                 }
 
-                /* Modal */
-                .modal-overlay {
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    right: 0;
-                    bottom: 0;
-                    background: rgba(0, 0, 0, 0.5);
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    z-index: 1000;
-                    backdrop-filter: blur(4px);
+                .truncate-text {
+                    display: -webkit-box;
+                    -webkit-line-clamp: 3;
+                    -webkit-box-orient: vertical;
+                    overflow: hidden;
+                    color: var(--color-text-muted);
+                    font-size: 0.95rem; line-height: 1.6;
+                    margin-bottom: auto; /* Pushes footer down */
+                    padding-bottom: 1.5rem;
+                }
+
+                .card-footer {
+                    display: flex; gap: 0.5rem; padding-top: 1rem;
+                    border-top: 1px solid rgba(255,255,255,0.05);
+                }
+
+                .mini-tag {
+                    font-size: 0.75rem;
+                    background: rgba(255, 255, 255, 0.05);
+                    padding: 0.25rem 0.6rem;
+                    border-radius: 4px;
+                    color: var(--color-text-muted);
+                    display: flex; align-items: center; gap: 5px;
+                }
+                
+                .empty-state {
+                    grid-column: 1 / -1;
+                    text-align: center; padding: 4rem;
+                    color: var(--color-text-muted);
+                }
+                .empty-icon { opacity: 0.2; margin-bottom: 1rem; }
+
+                /* Modal Overlay */
+                .modal-backdrop {
+                    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+                    background: rgba(15, 23, 42, 0.85);
+                    backdrop-filter: blur(8px);
+                    display: flex; align-items: center; justify-content: center;
+                    z-index: 200; padding: 1rem;
                 }
 
                 .modal-content {
-                    background: white;
-                    width: 90%;
-                    max-width: 600px;
-                    border-radius: var(--radius-lg);
-                    padding: 2rem;
+                    background: var(--color-bg-card);
+                    width: 100%; max-width: 650px;
+                    border-radius: 20px;
+                    border: 1px solid var(--color-border);
+                    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
                     position: relative;
                     animation: slideUp 0.3s ease-out;
-                }
-
-                @keyframes slideUp {
-                    from { transform: translateY(20px); opacity: 0; }
-                    to { transform: translateY(0); opacity: 1; }
+                    max-height: 90vh; overflow-y: auto;
                 }
 
                 .close-btn {
-                    position: absolute;
-                    top: 1rem;
-                    right: 1rem;
+                    position: absolute; top: 1.5rem; right: 1.5rem;
+                    background: transparent; border: none;
                     color: var(--color-text-muted);
+                    cursor: pointer; transition: 0.2s;
                 }
-                
-                .close-btn:hover {
-                    color: var(--color-text-main);
-                }
+                .close-btn:hover { color: white; transform: rotate(90deg); }
 
                 .modal-header {
-                    margin-bottom: 1.5rem;
+                    padding: 2.5rem 2.5rem 1.5rem;
                     border-bottom: 1px solid var(--color-border);
-                    padding-bottom: 1rem;
+                    background: linear-gradient(to bottom, rgba(255,255,255,0.02), transparent);
                 }
 
-                .modal-badge {
+                .modal-section-badge {
                     color: var(--color-accent);
-                    font-weight: 700;
-                    font-size: 0.875rem;
-                    display: block;
-                    margin-bottom: 0.5rem;
+                    font-weight: 700; font-size: 1rem;
+                    display: block; margin-bottom: 0.5rem;
+                    letter-spacing: 0.5px;
                 }
-                
+
                 .modal-header h2 {
-                    margin: 0;
+                    font-family: var(--font-heading);
+                    font-size: 2rem; margin: 0; line-height: 1.2;
                 }
 
-                .modal-body h4 {
-                    margin-bottom: 0.5rem;
+                .modal-body { padding: 2.5rem; }
+
+                .legal-text-box {
+                    background: rgba(15, 23, 42, 0.5);
+                    padding: 1.5rem; border-radius: 12px;
+                    border: 1px solid var(--color-border);
+                    margin-bottom: 2rem;
                 }
-                
-                .modal-body p {
-                    color: var(--color-text-main);
-                    line-height: 1.6;
-                    margin-bottom: 1.5rem;
+                .icon-title { display: flex; align-items: center; gap: 0.5rem; color: white; font-weight: 600; margin-bottom: 0.75rem; font-size: 0.9rem; }
+                .legal-text-box p { color: #E2E8F0; line-height: 1.8; font-size: 1.05rem; margin: 0; }
+
+                .info-grid {
+                    display: grid; grid-template-columns: 1fr 1fr;
+                    gap: 1.5rem; margin-bottom: 2rem;
                 }
 
-                .punishment-box {
-                    background: #FEF2F2;
+                .info-item label {
+                    display: block; font-size: 0.75rem;
+                    text-transform: uppercase; letter-spacing: 1px;
+                    color: var(--color-text-muted); margin-bottom: 0.75rem;
+                }
+
+                .value-row {
+                    display: flex; align-items: center; gap: 0.75rem;
+                    font-weight: 600; font-size: 1rem; color: white;
+                }
+
+                .punishment-section {
+                    background: rgba(239, 68, 68, 0.1);
                     border-left: 4px solid #EF4444;
-                    padding: 1rem;
-                    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+                    padding: 1.5rem; border-radius: 0 12px 12px 0;
                 }
+
+                .punishment-section h4 {
+                    color: #FCA5A5; margin: 0 0 0.75rem 0;
+                    font-size: 1rem; font-weight: 600;
+                    display: flex; align-items: center; gap: 0.5rem;
+                }
+
+                .punishment-section p {
+                    color: #FECACA; font-size: 1rem;
+                    margin: 0; line-height: 1.6;
+                }
+
+                /* Utilities */
+                .text-accent { color: var(--color-accent); }
+                .text-green { color: #10B981; }
+                .text-amber { color: #F59E0B; }
+                .animate-fade-in { animation: fadeIn 0.5s ease-out; }
                 
-                .punishment-box p {
-                    margin-bottom: 0;
-                }
+                @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+                @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+                /* Scrollbar */
+                .modal-content::-webkit-scrollbar { width: 8px; }
+                .modal-content::-webkit-scrollbar-track { background: var(--color-bg); }
+                .modal-content::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
             `}</style>
         </div>
     );
