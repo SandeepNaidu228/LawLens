@@ -1,7 +1,10 @@
 import React from 'react';
+import { useAuth } from '../../context/AuthContext';
 import { User, Mail, Shield, BarChart, Settings } from 'lucide-react';
 
 const Profile = () => {
+    const { user } = useAuth();
+
     return (
         <div className="profile-page animate-fade-in">
             <header className="page-header">
@@ -11,9 +14,13 @@ const Profile = () => {
 
             <div className="profile-card">
                 <div className="profile-header">
-                    <div className="profile-avatar-lg">User</div>
+                    {user?.picture ? (
+                        <img src={user.picture} alt="Avatar" className="profile-avatar-lg-img" />
+                    ) : (
+                        <div className="profile-avatar-lg">{user?.name?.charAt(0) || 'U'}</div>
+                    )}
                     <div className="header-info">
-                        <h2>Username</h2>
+                        <h2>{user?.name || 'Guest User'}</h2>
                         <div className="badge-row">
                             <span className="status-badge">Active</span>
                         </div>
@@ -28,11 +35,11 @@ const Profile = () => {
                 <div className="profile-details-grid">
                     <div className="detail-item">
                         <label><Mail size={14} /> Email Address</label>
-                        <p>john.doe@example.com</p>
+                        <p>{user?.email || 'Not provided'}</p>
                     </div>
                     <div className="detail-item">
                         <label><User size={14} /> Username</label>
-                        <p>legal_eagle_99</p>
+                        <p>{user?.name?.toLowerCase().replace(/\s+/g, '_') || 'guest_user'}</p>
                     </div>
                 </div>
             </div>
@@ -41,12 +48,12 @@ const Profile = () => {
                 <h3>Usage Statistics</h3>
                 <div className="stats-grid">
                     <div className="stat-card">
-                        <div className="stat-icon"><BarChart size={20} className="text-accent"/></div>
+                        <div className="stat-icon"><BarChart size={20} className="text-accent" /></div>
                         <span className="stat-value">124</span>
                         <span className="stat-label">Queries Run</span>
                     </div>
                     <div className="stat-card">
-                        <div className="stat-icon"><Shield size={20} className="text-green"/></div>
+                        <div className="stat-icon"><Shield size={20} className="text-green" /></div>
                         <span className="stat-value">0</span>
                         <span className="stat-label">Data Leaks</span>
                     </div>
@@ -97,6 +104,14 @@ const Profile = () => {
                     font-size: 2rem; font-weight: 700; color: white;
                     box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
                 }
+
+                .profile-avatar-lg-img {
+                    width: 80px; height: 80px;
+                    border-radius: 50%;
+                    object-fit: cover;
+                    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+                }
+
 
                 .header-info h2 {
                     font-family: var(--font-heading);

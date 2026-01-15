@@ -1,114 +1,146 @@
 import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useGoogleLogin } from '@react-oauth/google';
+import { useAuth } from '../context/AuthContext';
 import { Scale, Lock, ShieldCheck, Mail } from 'lucide-react';
 
 const SignIn = () => {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
+  const { login: authLogin } = useAuth();
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        // Bypass logic as requested
+  const login = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        const response = await fetch('https://www.googleapis.com/oauth2/v1/userinfo?alt=json', {
+          headers: {
+            Authorization: `Bearer ${tokenResponse.access_token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP status ${response.status}`);
+        }
+
+        const userData = await response.json();
+        console.log('User Data fetched:', userData); // Debugging
+        authLogin(userData);
         navigate('/dashboard');
-    };
+      } catch (error) {
+        console.error('Failed to fetch user data:', error);
+        alert('Failed to login with Google. Please try again.');
+      }
+    },
+    onError: () => {
+      console.log('Login Failed');
+      alert('Google Login Failed');
+    },
+    scope: 'email profile openid', // Explicitly request scopes
+  });
 
-    return (
-        <div className="auth-page">
-            {/* Background Decor */}
-            <div className="bg-glow"></div>
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // Bypass logic as requested
+    navigate('/dashboard');
+  };
 
-            <div className="auth-container">
-                {/* Left Side - Trust/Info Panel (Visible on Desktop) */}
-                <div className="info-panel">
-                    <div className="brand">
-                        <Scale size={32} className="text-accent" />
-                        <span className="brand-name">LawLens</span>
-                    </div>
-                    
-                    <div className="info-content">
-                        <h2>Legal Clarity, <br/>Zero Compromise.</h2>
-                        <p>Access India's most advanced privacy-first legal mapping engine.</p>
-                        
-                        <div className="trust-badges">
-                            <div className="badge-item">
-                                <ShieldCheck size={20} className="text-green" />
-                                <span>No Search History Logs</span>
-                            </div>
-                            <div className="badge-item">
-                                <Lock size={20} className="text-accent" />
-                                <span>End-to-End Encryption</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div className="info-footer">
-                        <p>&copy; 2024 LawLens Legal Tech</p>
-                    </div>
-                </div>
+  return (
+    <div className="auth-page">
+      {/* Background Decor */}
+      <div className="bg-glow"></div>
 
-                {/* Right Side - Login Form */}
-                <div className="form-panel">
-                    <div className="auth-card">
-                        <div className="auth-header">
-                            <h1>Welcome Back</h1>
-                            <p className="subtitle">Please enter your details to sign in.</p>
-                        </div>
+      <div className="auth-container">
+        {/* Left Side - Trust/Info Panel (Visible on Desktop) */}
+        <div className="info-panel">
+          <div className="brand">
+            <Scale size={32} className="text-accent" />
+            <span className="brand-name">LawLens</span>
+          </div>
 
-                        {/* Google Sign In */}
-                        <button className="btn-google">
-                            <svg className="google-icon" viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
-                                <g transform="matrix(1, 0, 0, 1, 27.009001, -39.23856)">
-                                    <path fill="#4285F4" d="M -3.264 51.509 C -3.264 50.719 -3.334 49.969 -3.454 49.239 L -14.754 49.239 L -14.754 53.749 L -8.284 53.749 C -8.574 55.229 -9.424 56.479 -10.684 57.329 L -10.684 60.329 L -6.824 60.329 C -4.564 58.239 -3.264 55.159 -3.264 51.509 Z" />
-                                    <path fill="#34A853" d="M -14.754 63.239 C -11.514 63.239 -8.804 62.159 -6.824 60.329 L -10.684 57.329 C -11.764 58.049 -13.134 58.489 -14.754 58.489 C -17.884 58.489 -20.534 56.379 -21.484 53.369 L -25.464 53.369 L -25.464 56.469 C -23.494 60.379 -19.464 63.239 -14.754 63.239 Z" />
-                                    <path fill="#FBBC05" d="M -21.484 53.369 C -21.734 52.619 -21.864 51.819 -21.864 50.989 C -21.864 50.159 -21.734 49.359 -21.484 48.609 L -21.484 45.509 L -25.464 45.509 C -26.284 47.129 -26.754 48.989 -26.754 50.989 C -26.754 52.989 -26.284 54.849 -25.464 56.469 L -21.484 53.369 Z" />
-                                    <path fill="#EA4335" d="M -14.754 43.489 C -12.984 43.489 -11.404 44.099 -10.154 45.299 L -6.734 41.879 C -8.804 39.949 -11.514 38.739 -14.754 38.739 C -19.464 38.739 -23.494 41.599 -25.464 45.509 L -21.484 48.609 C -20.534 45.599 -17.884 43.489 -14.754 43.489 Z" />
-                                </g>
-                            </svg>
-                            Sign in with Google
-                        </button>
+          <div className="info-content">
+            <h2>Legal Clarity, <br />Zero Compromise.</h2>
+            <p>Access India's most advanced privacy-first legal mapping engine.</p>
 
-                        <div className="divider">
-                            <span>or continue with email</span>
-                        </div>
+            <div className="trust-badges">
+              <div className="badge-item">
+                <ShieldCheck size={20} className="text-green" />
+                <span>No Search History Logs</span>
+              </div>
+              <div className="badge-item">
+                <Lock size={20} className="text-accent" />
+                <span>End-to-End Encryption</span>
+              </div>
+            </div>
+          </div>
 
-                        <form onSubmit={handleSubmit} className="auth-form">
-                            <div className="form-group">
-                                <label className="label">Email Address</label>
-                                <div className="input-wrapper">
-                                    <Mail size={18} className="input-icon" />
-                                    <input type="email" className="input" placeholder="name@company.com" required />
-                                </div>
-                            </div>
+          <div className="info-footer">
+            <p>&copy; 2024 LawLens Legal Tech</p>
+          </div>
+        </div>
 
-                            <div className="form-group">
-                                <label className="label">Password</label>
-                                <div className="input-wrapper">
-                                    <Lock size={18} className="input-icon" />
-                                    <input type="password" className="input" placeholder="••••••••" required />
-                                </div>
-                            </div>
-                            
-                            <div className="form-options">
-                                <label className="checkbox-container">
-                                    <input type="checkbox" />
-                                    <span className="checkmark"></span>
-                                    Remember me
-                                </label>
-                                <Link to="#" className="link-sm">Forgot Password?</Link>
-                            </div>
-
-                            <button type="submit" className="btn btn-primary btn-block">
-                                Sign In
-                            </button>
-                        </form>
-
-                        <div className="auth-footer">
-                            <p>Don't have an account? <Link to="#" className="link">Create account</Link></p>
-                        </div>
-                    </div>
-                </div>
+        {/* Right Side - Login Form */}
+        <div className="form-panel">
+          <div className="auth-card">
+            <div className="auth-header">
+              <h1>Welcome Back</h1>
+              <p className="subtitle">Please enter your details to sign in.</p>
             </div>
 
-            <style>{`
+            {/* Google Sign In */}
+            <button className="btn-google" onClick={() => login()}>
+              <svg className="google-icon" viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
+                <g transform="matrix(1, 0, 0, 1, 27.009001, -39.23856)">
+                  <path fill="#4285F4" d="M -3.264 51.509 C -3.264 50.719 -3.334 49.969 -3.454 49.239 L -14.754 49.239 L -14.754 53.749 L -8.284 53.749 C -8.574 55.229 -9.424 56.479 -10.684 57.329 L -10.684 60.329 L -6.824 60.329 C -4.564 58.239 -3.264 55.159 -3.264 51.509 Z" />
+                  <path fill="#34A853" d="M -14.754 63.239 C -11.514 63.239 -8.804 62.159 -6.824 60.329 L -10.684 57.329 C -11.764 58.049 -13.134 58.489 -14.754 58.489 C -17.884 58.489 -20.534 56.379 -21.484 53.369 L -25.464 53.369 L -25.464 56.469 C -23.494 60.379 -19.464 63.239 -14.754 63.239 Z" />
+                  <path fill="#FBBC05" d="M -21.484 53.369 C -21.734 52.619 -21.864 51.819 -21.864 50.989 C -21.864 50.159 -21.734 49.359 -21.484 48.609 L -21.484 45.509 L -25.464 45.509 C -26.284 47.129 -26.754 48.989 -26.754 50.989 C -26.754 52.989 -26.284 54.849 -25.464 56.469 L -21.484 53.369 Z" />
+                  <path fill="#EA4335" d="M -14.754 43.489 C -12.984 43.489 -11.404 44.099 -10.154 45.299 L -6.734 41.879 C -8.804 39.949 -11.514 38.739 -14.754 38.739 C -19.464 38.739 -23.494 41.599 -25.464 45.509 L -21.484 48.609 C -20.534 45.599 -17.884 43.489 -14.754 43.489 Z" />
+                </g>
+              </svg>
+              Sign in with Google
+            </button>
+
+            <div className="divider">
+              <span>or continue with email</span>
+            </div>
+
+            <form onSubmit={handleSubmit} className="auth-form">
+              <div className="form-group">
+                <label className="label">Email Address</label>
+                <div className="input-wrapper">
+                  <Mail size={18} className="input-icon" />
+                  <input type="email" className="input" placeholder="name@company.com" required />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="label">Password</label>
+                <div className="input-wrapper">
+                  <Lock size={18} className="input-icon" />
+                  <input type="password" className="input" placeholder="••••••••" required />
+                </div>
+              </div>
+
+              <div className="form-options">
+                <label className="checkbox-container">
+                  <input type="checkbox" />
+                  <span className="checkmark"></span>
+                  Remember me
+                </label>
+                <Link to="#" className="link-sm">Forgot Password?</Link>
+              </div>
+
+              <button type="submit" className="btn btn-primary btn-block">
+                Sign In
+              </button>
+            </form>
+
+            <div className="auth-footer">
+              <p>Don't have an account? <Link to="#" className="link">Create account</Link></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <style>{`
         :root {
           --color-bg: #0F172A;
           --color-bg-card: #1E293B;
@@ -417,8 +449,8 @@ const SignIn = () => {
             .form-panel { padding: 2rem; }
         }
       `}</style>
-        </div>
-    );
+    </div>
+  );
 };
 
 export default SignIn;
