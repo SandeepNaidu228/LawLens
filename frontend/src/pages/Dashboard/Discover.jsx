@@ -1,37 +1,69 @@
 import React, { useState, useMemo } from 'react';
-import { ChevronRight, X, Gavel, Shield, AlertTriangle, Book } from 'lucide-react';
-
-// Importing the dataset directly from the local file
+import { ChevronRight, X, Gavel, Shield, AlertTriangle, Book, Search, BookOpen, Sparkles } from 'lucide-react';
 import ipcDataRaw from '../../../../semantic-search/ipc_sections.json';
 
 const Discover = () => {
-    // Only state needed is for the selected modal item
     const [selectedIPC, setSelectedIPC] = useState(null);
+    const [searchQuery, setSearchQuery] = useState('');
 
-    // Sort the data by IPC Section Number numerically/naturally
     const sortedIPC = useMemo(() => {
         return [...ipcDataRaw].sort((a, b) => {
-            // Remove "Section " prefix to get "140", "120B", etc.
             const secA = a.section.replace('Section ', '').trim();
             const secB = b.section.replace('Section ', '').trim();
-
-            // Use localeCompare with numeric: true for natural sorting 
-            // (e.g., puts 2 before 10, and 120A after 120)
             return secA.localeCompare(secB, undefined, { numeric: true, sensitivity: 'base' });
         });
     }, []);
 
+    const filteredIPC = useMemo(() => {
+        if (!searchQuery.trim()) return sortedIPC;
+        const query = searchQuery.toLowerCase();
+        return sortedIPC.filter(ipc => 
+            ipc.section.toLowerCase().includes(query) ||
+            ipc.title.toLowerCase().includes(query) ||
+            ipc.desc.toLowerCase().includes(query)
+        );
+    }, [sortedIPC, searchQuery]);
+
     return (
-        <div className="discover-container animate-fade-in">
+        <div className="discover-page">
             <header className="page-header">
-                <h1>IPC Library</h1>
-                <p className="subtitle">Browse the complete registry of Indian Penal Code sections.</p>
+                <div className="header-content">
+                    <div className="header-badge">
+                        <Sparkles size={14} />
+                        <span>Legal Reference</span>
+                    </div>
+                    <h1>IPC Library</h1>
+                    <p>Browse the complete registry of Indian Penal Code sections with detailed legal definitions.</p>
+                </div>
             </header>
 
-            {/* Grid Results - Displaying SORTED sections */}
+            <div className="search-section">
+                <div className="search-wrapper">
+                    <Search size={18} className="search-icon" />
+                    <input
+                        type="text"
+                        placeholder="Search by section number, title, or keywords..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                    {searchQuery && (
+                        <button className="clear-btn" onClick={() => setSearchQuery('')}>
+                            <X size={16} />
+                        </button>
+                    )}
+                </div>
+                <div className="search-meta">
+                    <span>{filteredIPC.length} sections found</span>
+                </div>
+            </div>
+
             <div className="ipc-grid">
-                {sortedIPC.map((ipc) => (
-                    <div key={ipc.id} className="ipc-card" onClick={() => setSelectedIPC(ipc)}>
+                {filteredIPC.map((ipc, index) => (
+                    <div 
+                        key={`${ipc.id}-${index}`}
+                        className="ipc-card" 
+                        onClick={() => setSelectedIPC(ipc)}
+                    >
                         <div className="card-header">
                             <span className="section-badge">{ipc.section}</span>
                             <ChevronRight size={18} className="arrow-icon" />
@@ -40,14 +72,22 @@ const Discover = () => {
                         <p className="truncate-text">{ipc.desc}</p>
                         <div className="card-footer">
                             <div className="mini-tag">
-                                <Shield size={12} /> {ipc.type}
+                                <Shield size={12} />
+                                <span>{ipc.type}</span>
                             </div>
                         </div>
                     </div>
                 ))}
             </div>
 
-            {/* Detailed Modal Overlay */}
+            {filteredIPC.length === 0 && (
+                <div className="no-results">
+                    <BookOpen size={40} />
+                    <h3>No sections found</h3>
+                    <p>Try adjusting your search terms or browse all sections by clearing the search.</p>
+                </div>
+            )}
+
             {selectedIPC && (
                 <div className="modal-backdrop" onClick={() => setSelectedIPC(null)}>
                     <div className="modal-content" onClick={e => e.stopPropagation()}>
@@ -63,7 +103,8 @@ const Discover = () => {
                         <div className="modal-body">
                             <div className="legal-text-box">
                                 <div className="icon-title">
-                                    <Book size={18} className="text-accent" /> Legal Definition
+                                    <Book size={18} />
+                                    <span>Legal Definition</span>
                                 </div>
                                 <p>{selectedIPC.desc}</p>
                             </div>
@@ -72,21 +113,24 @@ const Discover = () => {
                                 <div className="info-item">
                                     <label>Nature of Offense</label>
                                     <div className="value-row">
-                                        <Shield size={18} className="text-green" />
+                                        <Shield size={18} className="icon-success" />
                                         <span>{selectedIPC.type}</span>
                                     </div>
                                 </div>
                                 <div className="info-item">
                                     <label>Bail Status</label>
                                     <div className="value-row">
-                                        <AlertTriangle size={18} className="text-amber" />
+                                        <AlertTriangle size={18} className="icon-warning" />
                                         <span>{selectedIPC.bailable}</span>
                                     </div>
                                 </div>
                             </div>
 
                             <div className="punishment-section">
-                                <h4><Gavel size={16} /> Punishment Prescribed</h4>
+                                <div className="punishment-header">
+                                    <Gavel size={16} />
+                                    <span>Punishment Prescribed</span>
+                                </div>
                                 <p>Imprisonment for a term which may extend to the duration specified in the specific subsection, or fine, or both.</p>
                             </div>
                         </div>
@@ -95,78 +139,176 @@ const Discover = () => {
             )}
 
             <style>{`
-                :root {
-                    --color-bg: #0F172A;
-                    --color-bg-card: #1E293B;
-                    --color-primary: #3B82F6;
-                    --color-accent: #F59E0B;
-                    --color-text-main: #F8FAFC;
-                    --color-text-muted: #94A3B8;
-                    --color-border: rgba(255, 255, 255, 0.1);
-                    --font-heading: 'Merriweather', serif;
-                    --font-body: 'Inter', sans-serif;
-                }
-
-                .discover-container {
-                    width: 100%;
+                .discover-page {
                     max-width: 1200px;
                     margin: 0 auto;
+                    animation: fadeIn 0.4s ease-out;
                 }
 
-                /* Header */
-                .page-header { margin-bottom: 3rem; text-align: center; }
-                .page-header h1 { 
-                    font-family: var(--font-heading); 
-                    font-size: 2.5rem; 
-                    margin-bottom: 0.5rem; 
-                    color: var(--color-text-main);
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: translateY(10px); }
+                    to { opacity: 1; transform: translateY(0); }
                 }
-                .subtitle { color: var(--color-text-muted); font-size: 1.1rem; }
 
-                /* Grid */
+                .page-header {
+                    margin-bottom: 2rem;
+                    text-align: center;
+                }
+
+                .header-badge {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    background: rgba(99, 102, 241, 0.1);
+                    border: 1px solid rgba(99, 102, 241, 0.2);
+                    padding: 0.4rem 0.9rem;
+                    border-radius: 100px;
+                    font-size: 0.8rem;
+                    color: var(--color-primary-light, #818CF8);
+                    margin-bottom: 1rem;
+                }
+
+                .page-header h1 {
+                    font-family: var(--font-serif, 'Playfair Display', serif);
+                    font-size: 2.25rem;
+                    margin-bottom: 0.5rem;
+                    color: var(--color-text-primary, #F8FAFC);
+                    letter-spacing: -0.02em;
+                }
+
+                .page-header p {
+                    color: var(--color-text-muted, #64748B);
+                    font-size: 1rem;
+                }
+
+                .search-section {
+                    margin-bottom: 2.5rem;
+                }
+
+                .search-wrapper {
+                    position: relative;
+                    max-width: 600px;
+                    margin: 0 auto 1rem;
+                }
+
+                .search-wrapper .search-icon {
+                    position: absolute;
+                    left: 1.25rem;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    color: var(--color-text-subtle, #475569);
+                    pointer-events: none;
+                }
+
+                .search-wrapper input {
+                    width: 100%;
+                    background: rgba(17, 24, 39, 0.6);
+                    border: 1px solid rgba(255, 255, 255, 0.08);
+                    border-radius: 16px;
+                    padding: 1rem 3rem 1rem 3.25rem;
+                    color: var(--color-text-primary, #F8FAFC);
+                    font-size: 1rem;
+                    transition: all 0.2s ease;
+                }
+
+                .search-wrapper input::placeholder {
+                    color: var(--color-text-subtle, #475569);
+                }
+
+                .search-wrapper input:focus {
+                    outline: none;
+                    border-color: var(--color-primary, #6366F1);
+                    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+                }
+
+                .clear-btn {
+                    position: absolute;
+                    right: 1rem;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    background: rgba(255, 255, 255, 0.1);
+                    border: none;
+                    border-radius: 50%;
+                    width: 28px;
+                    height: 28px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: var(--color-text-muted, #64748B);
+                    cursor: pointer;
+                    transition: all 0.2s;
+                }
+
+                .clear-btn:hover {
+                    background: rgba(255, 255, 255, 0.15);
+                    color: var(--color-text-primary, #F8FAFC);
+                }
+
+                .search-meta {
+                    text-align: center;
+                    font-size: 0.85rem;
+                    color: var(--color-text-muted, #64748B);
+                }
+
                 .ipc-grid {
                     display: grid;
-                    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-                    gap: 1.5rem;
+                    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+                    gap: 1.25rem;
                 }
 
                 .ipc-card {
-                    background: rgba(30, 41, 59, 0.4);
-                    border: 1px solid var(--color-border);
-                    border-radius: 16px;
+                    background: rgba(17, 24, 39, 0.5);
+                    border: 1px solid rgba(255, 255, 255, 0.05);
+                    border-radius: 20px;
                     padding: 1.5rem;
                     cursor: pointer;
-                    transition: all 0.3s;
-                    position: relative;
-                    overflow: hidden;
-                    display: flex; flex-direction: column;
+                    transition: all 0.25s ease;
+                    display: flex;
+                    flex-direction: column;
                 }
 
                 .ipc-card:hover {
-                    transform: translateY(-5px);
-                    border-color: var(--color-primary);
-                    background: var(--color-bg-card);
-                    box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.4);
+                    background: rgba(17, 24, 39, 0.8);
+                    border-color: var(--color-primary, #6366F1);
+                    transform: translateY(-4px);
+                    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
                 }
 
                 .card-header {
-                    display: flex; justify-content: space-between; align-items: center;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
                     margin-bottom: 1rem;
                 }
 
                 .section-badge {
-                    background: rgba(245, 158, 11, 0.1);
-                    color: var(--color-accent);
-                    font-weight: 700; font-size: 0.8rem;
-                    padding: 0.25rem 0.75rem; border-radius: 6px;
+                    background: rgba(212, 175, 55, 0.12);
+                    color: var(--color-accent, #D4AF37);
+                    font-weight: 700;
+                    font-size: 0.8rem;
+                    padding: 0.35rem 0.75rem;
+                    border-radius: 8px;
+                    letter-spacing: 0.3px;
                 }
-                
-                .arrow-icon { color: var(--color-text-muted); opacity: 0; transition: 0.2s; }
-                .ipc-card:hover .arrow-icon { opacity: 1; transform: translateX(5px); }
+
+                .arrow-icon {
+                    color: var(--color-text-muted, #64748B);
+                    opacity: 0;
+                    transform: translateX(-5px);
+                    transition: all 0.2s ease;
+                }
+
+                .ipc-card:hover .arrow-icon {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
 
                 .ipc-card h3 {
-                    font-size: 1.2rem; font-weight: 600; margin-bottom: 0.75rem;
-                    color: var(--color-text-main); font-family: var(--font-heading);
+                    font-family: var(--font-serif, 'Playfair Display', serif);
+                    font-size: 1.15rem;
+                    font-weight: 600;
+                    margin: 0 0 0.75rem 0;
+                    color: var(--color-text-primary, #F8FAFC);
                 }
 
                 .truncate-text {
@@ -174,129 +316,247 @@ const Discover = () => {
                     -webkit-line-clamp: 3;
                     -webkit-box-orient: vertical;
                     overflow: hidden;
-                    color: var(--color-text-muted);
-                    font-size: 0.95rem; line-height: 1.6;
-                    margin-bottom: auto; /* Pushes footer down */
-                    padding-bottom: 1.5rem;
+                    color: var(--color-text-secondary, #CBD5E1);
+                    font-size: 0.9rem;
+                    line-height: 1.6;
+                    flex: 1;
+                    margin-bottom: 1rem;
                 }
 
                 .card-footer {
-                    display: flex; gap: 0.5rem; padding-top: 1rem;
-                    border-top: 1px solid rgba(255,255,255,0.05);
+                    padding-top: 1rem;
+                    border-top: 1px solid rgba(255, 255, 255, 0.05);
                 }
 
                 .mini-tag {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 0.35rem;
                     font-size: 0.75rem;
                     background: rgba(255, 255, 255, 0.05);
-                    padding: 0.25rem 0.6rem;
-                    border-radius: 4px;
-                    color: var(--color-text-muted);
-                    display: flex; align-items: center; gap: 5px;
+                    padding: 0.3rem 0.6rem;
+                    border-radius: 6px;
+                    color: var(--color-text-muted, #64748B);
                 }
 
-                /* Modal Overlay */
+                .no-results {
+                    text-align: center;
+                    padding: 4rem 2rem;
+                    animation: fadeIn 0.4s ease-out;
+                }
+
+                .no-results svg {
+                    color: var(--color-text-subtle, #475569);
+                    margin-bottom: 1rem;
+                }
+
+                .no-results h3 {
+                    font-family: var(--font-serif, 'Playfair Display', serif);
+                    color: var(--color-text-primary, #F8FAFC);
+                    margin: 0 0 0.5rem 0;
+                }
+
+                .no-results p {
+                    color: var(--color-text-muted, #64748B);
+                    max-width: 400px;
+                    margin: 0 auto;
+                }
+
                 .modal-backdrop {
-                    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-                    background: rgba(15, 23, 42, 0.85);
-                    backdrop-filter: blur(8px);
-                    display: flex; align-items: center; justify-content: center;
-                    z-index: 200; padding: 1rem;
+                    position: fixed;
+                    inset: 0;
+                    background: rgba(8, 11, 20, 0.9);
+                    backdrop-filter: blur(12px);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 200;
+                    padding: 1.5rem;
+                    animation: fadeIn 0.2s ease;
                 }
 
                 .modal-content {
-                    background: var(--color-bg-card);
-                    width: 100%; max-width: 650px;
-                    border-radius: 20px;
-                    border: 1px solid var(--color-border);
-                    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+                    background: var(--color-bg-card, #111827);
+                    width: 100%;
+                    max-width: 680px;
+                    border-radius: 24px;
+                    border: 1px solid rgba(255, 255, 255, 0.08);
+                    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
                     position: relative;
-                    animation: slideUp 0.3s ease-out;
-                    max-height: 90vh; overflow-y: auto;
+                    animation: slideUp 0.3s ease;
+                    max-height: 90vh;
+                    overflow-y: auto;
+                }
+
+                @keyframes slideUp {
+                    from { transform: translateY(20px); opacity: 0; }
+                    to { transform: translateY(0); opacity: 1; }
                 }
 
                 .close-btn {
-                    position: absolute; top: 1.5rem; right: 1.5rem;
-                    background: transparent; border: none;
-                    color: var(--color-text-muted);
-                    cursor: pointer; transition: 0.2s;
+                    position: absolute;
+                    top: 1.5rem;
+                    right: 1.5rem;
+                    background: rgba(255, 255, 255, 0.05);
+                    border: none;
+                    border-radius: 50%;
+                    width: 40px;
+                    height: 40px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: var(--color-text-muted, #64748B);
+                    cursor: pointer;
+                    transition: all 0.2s;
                 }
-                .close-btn:hover { color: white; transform: rotate(90deg); }
+
+                .close-btn:hover {
+                    background: rgba(255, 255, 255, 0.1);
+                    color: var(--color-text-primary, #F8FAFC);
+                    transform: rotate(90deg);
+                }
 
                 .modal-header {
                     padding: 2.5rem 2.5rem 1.5rem;
-                    border-bottom: 1px solid var(--color-border);
-                    background: linear-gradient(to bottom, rgba(255,255,255,0.02), transparent);
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
                 }
 
                 .modal-section-badge {
-                    color: var(--color-accent);
-                    font-weight: 700; font-size: 1rem;
-                    display: block; margin-bottom: 0.5rem;
+                    display: inline-block;
+                    color: var(--color-accent, #D4AF37);
+                    font-weight: 700;
+                    font-size: 0.9rem;
+                    margin-bottom: 0.5rem;
                     letter-spacing: 0.5px;
                 }
 
                 .modal-header h2 {
-                    font-family: var(--font-heading);
-                    font-size: 2rem; margin: 0; line-height: 1.2;
+                    font-family: var(--font-serif, 'Playfair Display', serif);
+                    font-size: 1.75rem;
+                    margin: 0;
+                    color: var(--color-text-primary, #F8FAFC);
+                    line-height: 1.25;
+                    padding-right: 2rem;
                 }
 
-                .modal-body { padding: 2.5rem; }
+                .modal-body {
+                    padding: 2rem 2.5rem 2.5rem;
+                }
 
                 .legal-text-box {
-                    background: rgba(15, 23, 42, 0.5);
-                    padding: 1.5rem; border-radius: 12px;
-                    border: 1px solid var(--color-border);
+                    background: rgba(0, 0, 0, 0.25);
+                    border: 1px solid rgba(255, 255, 255, 0.05);
+                    padding: 1.5rem;
+                    border-radius: 16px;
                     margin-bottom: 2rem;
                 }
-                .icon-title { display: flex; align-items: center; gap: 0.5rem; color: white; font-weight: 600; margin-bottom: 0.75rem; font-size: 0.9rem; }
-                .legal-text-box p { color: #E2E8F0; line-height: 1.8; font-size: 1.05rem; margin: 0; }
+
+                .icon-title {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    color: var(--color-accent, #D4AF37);
+                    font-weight: 600;
+                    font-size: 0.9rem;
+                    margin-bottom: 0.75rem;
+                }
+
+                .legal-text-box p {
+                    color: var(--color-text-secondary, #CBD5E1);
+                    line-height: 1.75;
+                    font-size: 1rem;
+                    margin: 0;
+                }
 
                 .info-grid {
-                    display: grid; grid-template-columns: 1fr 1fr;
-                    gap: 1.5rem; margin-bottom: 2rem;
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 1.5rem;
+                    margin-bottom: 2rem;
                 }
 
                 .info-item label {
-                    display: block; font-size: 0.75rem;
-                    text-transform: uppercase; letter-spacing: 1px;
-                    color: var(--color-text-muted); margin-bottom: 0.75rem;
+                    display: block;
+                    font-size: 0.75rem;
+                    text-transform: uppercase;
+                    letter-spacing: 1px;
+                    color: var(--color-text-muted, #64748B);
+                    margin-bottom: 0.75rem;
                 }
 
                 .value-row {
-                    display: flex; align-items: center; gap: 0.75rem;
-                    font-weight: 600; font-size: 1rem; color: white;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.75rem;
+                    font-weight: 600;
+                    font-size: 1rem;
+                    color: var(--color-text-primary, #F8FAFC);
+                }
+
+                .icon-success {
+                    color: var(--color-success, #10B981);
+                }
+
+                .icon-warning {
+                    color: var(--color-warning, #F59E0B);
                 }
 
                 .punishment-section {
-                    background: rgba(239, 68, 68, 0.1);
-                    border-left: 4px solid #EF4444;
-                    padding: 1.5rem; border-radius: 0 12px 12px 0;
+                    background: rgba(239, 68, 68, 0.08);
+                    border-left: 4px solid var(--color-danger, #EF4444);
+                    padding: 1.5rem;
+                    border-radius: 0 16px 16px 0;
                 }
 
-                .punishment-section h4 {
-                    color: #FCA5A5; margin: 0 0 0.75rem 0;
-                    font-size: 1rem; font-weight: 600;
-                    display: flex; align-items: center; gap: 0.5rem;
+                .punishment-header {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    color: #FCA5A5;
+                    font-weight: 600;
+                    font-size: 0.9rem;
+                    margin-bottom: 0.75rem;
                 }
 
                 .punishment-section p {
-                    color: #FECACA; font-size: 1rem;
-                    margin: 0; line-height: 1.6;
+                    color: #FECACA;
+                    font-size: 0.95rem;
+                    margin: 0;
+                    line-height: 1.6;
                 }
 
-                /* Utilities */
-                .text-accent { color: var(--color-accent); }
-                .text-green { color: #10B981; }
-                .text-amber { color: #F59E0B; }
-                .animate-fade-in { animation: fadeIn 0.5s ease-out; }
-                
-                @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-                @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+                .modal-content::-webkit-scrollbar {
+                    width: 8px;
+                }
 
-                /* Scrollbar */
-                .modal-content::-webkit-scrollbar { width: 8px; }
-                .modal-content::-webkit-scrollbar-track { background: var(--color-bg); }
-                .modal-content::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+                .modal-content::-webkit-scrollbar-track {
+                    background: transparent;
+                }
+
+                .modal-content::-webkit-scrollbar-thumb {
+                    background: rgba(255, 255, 255, 0.1);
+                    border-radius: 4px;
+                }
+
+                @media (max-width: 768px) {
+                    .ipc-grid {
+                        grid-template-columns: 1fr;
+                    }
+
+                    .modal-content {
+                        margin: 1rem;
+                    }
+
+                    .modal-header,
+                    .modal-body {
+                        padding-left: 1.5rem;
+                        padding-right: 1.5rem;
+                    }
+
+                    .info-grid {
+                        grid-template-columns: 1fr;
+                    }
+                }
             `}</style>
         </div>
     );

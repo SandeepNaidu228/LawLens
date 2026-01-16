@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import {
     Send,
-    AlertTriangle,
-    BookOpen,
     ShieldCheck,
-    Activity,
     Info,
     Scale,
-    Gavel
+    Gavel,
+    Sparkles,
+    BookOpen,
+    AlertCircle,
+    Loader2
 } from 'lucide-react';
 
 const Home = () => {
@@ -37,22 +38,16 @@ const Home = () => {
             const data = await response.json();
 
             if (data.status === 'no_clear_match') {
-                setResults([]); // Handle no match gracefully or show a message
-                // You might want to show the message from backend: data.message
-                // For now, setting empty results or specific handling
-                alert(data.message); // Simple feedback
+                setResults([]);
+                alert(data.message);
             } else {
-                // Map backend response to frontend expectations if necessary
-                // Backend returns: results: [{ipc_section, offense, confidence, explanation, punishment, cognizable, bailable, ...}]
-                // Frontend expects: {section, title, confidence, explanation, punishment, type, bailable}
-
                 const mappedResults = (data.results || []).map(item => ({
                     section: 'Section ' + item.ipc_section,
                     title: item.offense,
                     confidence: item.confidence,
                     explanation: item.explanation,
                     punishment: item.punishment,
-                    type: item.cognizable, // 'type' in frontend seems to map to 'Cognizable'
+                    type: item.cognizable,
                     bailable: item.bailable
                 }));
                 setResults(mappedResults);
@@ -67,78 +62,98 @@ const Home = () => {
     };
 
     return (
-        <div className="dashboard-container animate-fade-in">
+        <div className="home-page">
             <header className="page-header">
-                <h1>AI Legal Assistant</h1>
-                <p className="subtitle">Describe your situation to map it to the Indian Penal Code.</p>
+                <div className="header-content">
+                    <div className="header-badge">
+                        <Sparkles size={14} />
+                        <span>AI Legal Assistant</span>
+                    </div>
+                    <h1>Analyze Your Legal Situation</h1>
+                    <p>Describe your incident in plain language. Our AI will map it to relevant IPC sections with privacy-first processing.</p>
+                </div>
             </header>
 
-            <div className="grid-layout">
-                {/* Main Input & Results Column */}
-                <div className="main-panel">
-
-                    {/* Input Card */}
-                    <div className="card input-card">
-                        <div className="input-header">
-                            <label className="label">Incident Description</label>
-                            <span className="secure-badge">
-                                <ShieldCheck size={14} /> Private & Stateless Processing
-                            </span>
+            <div className="main-layout">
+                <div className="main-column">
+                    <div className="input-card">
+                        <div className="card-header">
+                            <div className="header-left">
+                                <h3>Incident Description</h3>
+                            </div>
+                            <div className="privacy-badge">
+                                <ShieldCheck size={14} />
+                                <span>Stateless Processing</span>
+                            </div>
                         </div>
-                        <textarea
-                            className="text-area"
-                            placeholder="E.g., My neighbor damaged my car while parking intentionally and is now refusing to pay for repairs..."
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                        />
-                        <div className="action-row">
-                            <span className="helper-text">
-                                <Info size={14} className="inline-icon" /> Be specific about actions and intent.
-                            </span>
+                        
+                        <div className="textarea-wrapper">
+                            <textarea
+                                placeholder="E.g., My neighbor damaged my car while parking intentionally and is now refusing to pay for repairs..."
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                            />
+                        </div>
+                        
+                        <div className="card-footer">
+                            <div className="helper">
+                                <Info size={14} />
+                                <span>Be specific about actions, intent, and circumstances for accurate results.</span>
+                            </div>
                             <button
-                                className={`btn-primary ${loading ? 'pulsing' : ''}`}
+                                className={`analyze-btn ${loading ? 'loading' : ''}`}
                                 onClick={handleAnalyze}
                                 disabled={loading || !description.trim()}
                             >
-                                {loading ? 'Analyzing...' : <>Analyze Incident <Send size={16} className="ml-2" /></>}
+                                {loading ? (
+                                    <>
+                                        <Loader2 size={18} className="spinner" />
+                                        <span>Analyzing...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <span>Analyze Incident</span>
+                                        <Send size={16} />
+                                    </>
+                                )}
                             </button>
                         </div>
                     </div>
 
-                    {/* Results Section */}
-                    {results && (
-                        <div className="results-container animate-slide-up">
-                            <div className="results-header-row">
-                                <h3>Analysis Report</h3>
-                                <span className="meta-tag">{results.length} Sections Found</span>
+                    {results && results.length > 0 && (
+                        <div className="results-section">
+                            <div className="results-header">
+                                <h2>Analysis Report</h2>
+                                <span className="results-count">{results.length} Section{results.length !== 1 ? 's' : ''} Found</span>
                             </div>
 
-                            <div className="results-list">
+                            <div className="results-grid">
                                 {results.map((item, index) => (
                                     <div key={index} className="result-card">
-                                        <div className="card-top-row">
-                                            <div className="badges-group">
+                                        <div className="result-top">
+                                            <div className="section-info">
                                                 <span className="section-badge">{item.section}</span>
-                                                <span className="type-badge">{item.type}</span>
+                                                <span className="type-tag">{item.type}</span>
                                             </div>
-                                            <div className="confidence-wrapper">
-                                                <span className="confidence-label">Match:</span>
-                                                <div className="confidence-track">
-                                                    <div
-                                                        className={`confidence-fill ${item.confidence > 80 ? 'high' : item.confidence > 60 ? 'med' : 'low'}`}
+                                            <div className="confidence-meter">
+                                                <span className="confidence-label">Match</span>
+                                                <div className="confidence-bar">
+                                                    <div 
+                                                        className={`confidence-fill ${item.confidence > 80 ? 'high' : item.confidence > 60 ? 'medium' : 'low'}`}
                                                         style={{ width: `${item.confidence}%` }}
                                                     ></div>
                                                 </div>
-                                                <span className="confidence-val">{item.confidence}%</span>
+                                                <span className="confidence-value">{item.confidence}%</span>
                                             </div>
                                         </div>
 
                                         <h4 className="result-title">{item.title}</h4>
-                                        <p className="result-desc">{item.explanation}</p>
+                                        <p className="result-explanation">{item.explanation}</p>
 
                                         <div className="punishment-box">
-                                            <div className="punishment-label">
-                                                <Gavel size={14} className="text-accent" /> Legal Consequence
+                                            <div className="punishment-header">
+                                                <Gavel size={14} />
+                                                <span>Legal Consequence</span>
                                             </div>
                                             <p>{item.punishment}</p>
                                         </div>
@@ -147,209 +162,523 @@ const Home = () => {
                             </div>
                         </div>
                     )}
+
+                    {results && results.length === 0 && (
+                        <div className="no-results">
+                            <AlertCircle size={32} />
+                            <h3>No Clear Match Found</h3>
+                            <p>Try providing more specific details about the incident, including actions taken and intent.</p>
+                        </div>
+                    )}
                 </div>
 
-                {/* Sidebar Column */}
-                <div className="info-sidebar">
-                    <div className="card info-card privacy-card">
-                        <div className="card-icon-wrapper success">
+                <aside className="sidebar-column">
+                    <div className="info-card privacy">
+                        <div className="info-icon">
                             <ShieldCheck size={24} />
                         </div>
                         <h4>Privacy First</h4>
-                        <p>Your incident data is processed in-memory and discarded immediately after analysis. No logs are kept.</p>
+                        <p>Your incident data is processed in-memory and discarded immediately. No logs are kept.</p>
                     </div>
 
-                    <div className="card info-card">
-                        <div className="card-icon-wrapper accent">
+                    <div className="info-card knowledge">
+                        <div className="info-icon">
                             <Scale size={24} />
                         </div>
                         <h4>Understanding IPC</h4>
-                        <p>The IPC (Indian Penal Code) is the official criminal code of India. This tool maps semantic intent to legal text.</p>
+                        <p>The Indian Penal Code is the official criminal code of India. This tool maps semantic intent to legal text.</p>
                     </div>
 
-                    {/* <div className="card info-card disclaimer-card">
-                        <div className="card-icon-wrapper danger">
-                            <AlertTriangle size={24} />
+                    <div className="info-card tips">
+                        <div className="info-icon">
+                            <BookOpen size={24} />
                         </div>
-                         <h4>Disclaimer</h4>
-                         <p>This tool is for informational purposes only. It is not a substitute for professional legal advice.</p>
-                    </div> */}
-                </div>
+                        <h4>Tips for Better Results</h4>
+                        <ul>
+                            <li>Describe the incident clearly</li>
+                            <li>Include who did what</li>
+                            <li>Mention any injuries or damages</li>
+                            <li>Note if threats were made</li>
+                        </ul>
+                    </div>
+                </aside>
             </div>
 
             <style>{`
-                :root {
-                    --color-bg: #0F172A;
-                    --color-bg-card: #1E293B;
-                    --color-bg-input: #0F172A;
-                    --color-primary: #3B82F6;
-                    --color-primary-hover: #2563EB;
-                    --color-accent: #F59E0B;
-                    --color-text-main: #F8FAFC;
-                    --color-text-muted: #94A3B8;
-                    --color-border: rgba(255,255,255,0.1);
-                    --font-heading: 'Merriweather', serif;
-                    --font-body: 'Inter', sans-serif;
-                }
-
-                .dashboard-container {
-                    width: 100%;
+                .home-page {
                     max-width: 1200px;
                     margin: 0 auto;
-                    padding-bottom: 4rem;
+                    animation: fadeIn 0.4s ease-out;
                 }
 
-                .page-header { margin-bottom: 2.5rem; }
-                .page-header h1 { 
-                    font-family: var(--font-heading); 
-                    font-size: 2rem; 
-                    margin-bottom: 0.5rem; 
-                    color: var(--color-text-main);
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: translateY(10px); }
+                    to { opacity: 1; transform: translateY(0); }
                 }
-                .subtitle { color: var(--color-text-muted); font-size: 1rem; }
 
-                .grid-layout {
+                .page-header {
+                    margin-bottom: 2.5rem;
+                }
+
+                .header-badge {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    background: rgba(99, 102, 241, 0.1);
+                    border: 1px solid rgba(99, 102, 241, 0.2);
+                    padding: 0.4rem 0.9rem;
+                    border-radius: 100px;
+                    font-size: 0.8rem;
+                    color: var(--color-primary-light, #818CF8);
+                    margin-bottom: 1rem;
+                }
+
+                .page-header h1 {
+                    font-family: var(--font-serif, 'Playfair Display', serif);
+                    font-size: 2rem;
+                    margin-bottom: 0.5rem;
+                    color: var(--color-text-primary, #F8FAFC);
+                    letter-spacing: -0.02em;
+                }
+
+                .page-header p {
+                    color: var(--color-text-muted, #64748B);
+                    font-size: 1rem;
+                    max-width: 600px;
+                }
+
+                .main-layout {
                     display: grid;
-                    grid-template-columns: 2fr 1fr;
+                    grid-template-columns: 1fr 320px;
                     gap: 2rem;
                 }
 
-                /* Cards */
-                .card {
-                    background: var(--color-bg-card);
-                    border: 1px solid var(--color-border);
-                    border-radius: 16px;
-                    padding: 1.5rem;
-                    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+                .main-column {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 2rem;
                 }
 
-                /* Input Section */
-                .input-header { display: flex; justify-content: space-between; margin-bottom: 1rem; align-items: center; }
-                .label { font-weight: 600; color: var(--color-text-main); font-size: 0.95rem; }
-                
-                .secure-badge {
-                    display: flex; align-items: center; gap: 0.4rem;
-                    font-size: 0.75rem; color: #10B981;
+                .input-card {
+                    background: rgba(17, 24, 39, 0.6);
+                    backdrop-filter: blur(10px);
+                    border: 1px solid rgba(255, 255, 255, 0.06);
+                    border-radius: 20px;
+                    overflow: hidden;
+                }
+
+                .card-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 1.25rem 1.5rem;
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+                }
+
+                .card-header h3 {
+                    font-family: var(--font-serif, 'Playfair Display', serif);
+                    font-size: 1.1rem;
+                    font-weight: 600;
+                    color: var(--color-text-primary, #F8FAFC);
+                    margin: 0;
+                }
+
+                .privacy-badge {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.4rem;
+                    font-size: 0.75rem;
+                    color: var(--color-success, #10B981);
                     background: rgba(16, 185, 129, 0.1);
-                    padding: 0.25rem 0.6rem; border-radius: 20px;
-                    border: 1px solid rgba(16, 185, 129, 0.2);
-                    font-weight: 500;
+                    padding: 0.35rem 0.7rem;
+                    border-radius: 100px;
+                    border: 1px solid rgba(16, 185, 129, 0.15);
                 }
 
-                .text-area {
-                    width: 100%; min-height: 180px;
-                    background: var(--color-bg-input);
-                    border: 1px solid var(--color-border);
-                    color: white; padding: 1rem; border-radius: 8px;
-                    font-family: var(--font-body); font-size: 1rem; line-height: 1.6;
-                    resize: vertical; margin-bottom: 1.25rem;
-                    transition: border-color 0.2s;
+                .textarea-wrapper {
+                    padding: 1.5rem;
                 }
-                .text-area:focus { outline: none; border-color: var(--color-primary); }
-                .text-area::placeholder { color: rgba(148, 163, 184, 0.5); }
 
-                .action-row { display: flex; justify-content: space-between; align-items: center; }
-                .helper-text { font-size: 0.85rem; color: var(--color-text-muted); display: flex; align-items: center; gap: 0.4rem; }
-                .inline-icon { opacity: 0.7; }
-
-                .btn-primary {
-                    background: var(--color-primary);
-                    color: white; border: none;
-                    padding: 0.75rem 1.5rem; border-radius: 8px;
-                    font-weight: 600; cursor: pointer;
-                    display: flex; align-items: center; transition: all 0.2s;
-                    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-                    border: 1px solid rgba(255,255,255,0.1);
+                .textarea-wrapper textarea {
+                    width: 100%;
+                    min-height: 180px;
+                    background: rgba(0, 0, 0, 0.25);
+                    border: 1px solid rgba(255, 255, 255, 0.06);
+                    border-radius: 12px;
+                    padding: 1rem;
+                    color: var(--color-text-primary, #F8FAFC);
+                    font-family: var(--font-sans, 'Inter', sans-serif);
+                    font-size: 0.95rem;
+                    line-height: 1.6;
+                    resize: vertical;
+                    transition: all 0.2s ease;
                 }
-                .btn-primary:hover { background: var(--color-primary-hover); transform: translateY(-1px); }
-                .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
-                .pulsing { animation: pulse 1.5s infinite; }
-                .ml-2 { margin-left: 0.5rem; }
 
-                /* Results */
-                .results-container { margin-top: 3rem; }
-                .results-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-                .results-header-row h3 { font-family: var(--font-heading); font-size: 1.5rem; color: var(--color-text-main); margin: 0; }
-                .meta-tag { background: rgba(255,255,255,0.1); padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.8rem; color: var(--color-text-muted); }
-                
-                .results-list { display: flex; flex-direction: column; gap: 1.5rem; }
+                .textarea-wrapper textarea::placeholder {
+                    color: var(--color-text-subtle, #475569);
+                }
+
+                .textarea-wrapper textarea:focus {
+                    outline: none;
+                    border-color: var(--color-primary, #6366F1);
+                    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+                }
+
+                .card-footer {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 1rem 1.5rem;
+                    background: rgba(0, 0, 0, 0.15);
+                    border-top: 1px solid rgba(255, 255, 255, 0.03);
+                }
+
+                .helper {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    font-size: 0.85rem;
+                    color: var(--color-text-muted, #64748B);
+                }
+
+                .analyze-btn {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    padding: 0.85rem 1.5rem;
+                    background: linear-gradient(135deg, var(--color-primary, #6366F1) 0%, var(--color-primary-dark, #4F46E5) 100%);
+                    color: white;
+                    border: none;
+                    border-radius: 12px;
+                    font-weight: 600;
+                    font-size: 0.95rem;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+                }
+
+                .analyze-btn:hover:not(:disabled) {
+                    transform: translateY(-2px);
+                    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35);
+                }
+
+                .analyze-btn:disabled {
+                    opacity: 0.6;
+                    cursor: not-allowed;
+                    transform: none;
+                }
+
+                .analyze-btn.loading .spinner {
+                    animation: spin 1s linear infinite;
+                }
+
+                @keyframes spin {
+                    from { transform: rotate(0deg); }
+                    to { transform: rotate(360deg); }
+                }
+
+                .results-section {
+                    animation: slideUp 0.4s ease-out;
+                }
+
+                @keyframes slideUp {
+                    from { opacity: 0; transform: translateY(20px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+
+                .results-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 1.5rem;
+                }
+
+                .results-header h2 {
+                    font-family: var(--font-serif, 'Playfair Display', serif);
+                    font-size: 1.5rem;
+                    color: var(--color-text-primary, #F8FAFC);
+                    margin: 0;
+                }
+
+                .results-count {
+                    font-size: 0.85rem;
+                    color: var(--color-text-muted, #64748B);
+                    background: rgba(255, 255, 255, 0.05);
+                    padding: 0.35rem 0.75rem;
+                    border-radius: 100px;
+                }
+
+                .results-grid {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 1.25rem;
+                }
 
                 .result-card {
-                    background: rgba(30, 41, 59, 0.6); /* Glass effect */
-                    border: 1px solid var(--color-border);
-                    border-left: 4px solid var(--color-accent);
-                    padding: 1.5rem; border-radius: 0 12px 12px 0;
+                    background: rgba(17, 24, 39, 0.6);
+                    border: 1px solid rgba(255, 255, 255, 0.06);
+                    border-left: 4px solid var(--color-accent, #D4AF37);
+                    border-radius: 0 16px 16px 0;
+                    padding: 1.5rem;
+                    transition: all 0.2s ease;
+                }
+
+                .result-card:hover {
+                    background: rgba(17, 24, 39, 0.8);
+                    border-color: rgba(255, 255, 255, 0.1);
+                }
+
+                .result-top {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: flex-start;
+                    margin-bottom: 1rem;
+                    flex-wrap: wrap;
+                    gap: 1rem;
+                }
+
+                .section-info {
+                    display: flex;
+                    gap: 0.5rem;
+                    align-items: center;
+                }
+
+                .section-badge {
+                    background: rgba(212, 175, 55, 0.15);
+                    color: var(--color-accent, #D4AF37);
+                    font-weight: 700;
+                    font-size: 0.85rem;
+                    padding: 0.35rem 0.75rem;
+                    border-radius: 8px;
+                    letter-spacing: 0.3px;
+                }
+
+                .type-tag {
+                    font-size: 0.75rem;
+                    color: var(--color-text-muted, #64748B);
+                    background: rgba(255, 255, 255, 0.05);
+                    padding: 0.3rem 0.6rem;
+                    border-radius: 6px;
+                }
+
+                .confidence-meter {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.75rem;
+                }
+
+                .confidence-label {
+                    font-size: 0.8rem;
+                    color: var(--color-text-muted, #64748B);
+                }
+
+                .confidence-bar {
+                    width: 80px;
+                    height: 6px;
+                    background: rgba(255, 255, 255, 0.1);
+                    border-radius: 10px;
+                    overflow: hidden;
+                }
+
+                .confidence-fill {
+                    height: 100%;
+                    border-radius: 10px;
+                    transition: width 0.5s ease;
+                }
+
+                .confidence-fill.high { background: linear-gradient(90deg, #10B981, #34D399); }
+                .confidence-fill.medium { background: linear-gradient(90deg, #F59E0B, #FBBF24); }
+                .confidence-fill.low { background: linear-gradient(90deg, #EF4444, #F87171); }
+
+                .confidence-value {
+                    font-size: 0.85rem;
+                    font-weight: 600;
+                    color: var(--color-text-primary, #F8FAFC);
+                    min-width: 36px;
+                }
+
+                .result-title {
+                    font-family: var(--font-serif, 'Playfair Display', serif);
+                    font-size: 1.25rem;
+                    color: var(--color-text-primary, #F8FAFC);
+                    margin: 0 0 0.75rem 0;
+                }
+
+                .result-explanation {
+                    color: var(--color-text-secondary, #CBD5E1);
+                    font-size: 0.95rem;
+                    line-height: 1.65;
+                    margin: 0 0 1.25rem 0;
+                }
+
+                .punishment-box {
+                    background: rgba(212, 175, 55, 0.08);
+                    border: 1px solid rgba(212, 175, 55, 0.15);
+                    border-radius: 12px;
+                    padding: 1rem;
+                }
+
+                .punishment-header {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    color: var(--color-accent, #D4AF37);
+                    font-size: 0.8rem;
+                    font-weight: 600;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                    margin-bottom: 0.5rem;
+                }
+
+                .punishment-box p {
+                    color: var(--color-text-secondary, #CBD5E1);
+                    font-size: 0.95rem;
+                    margin: 0;
+                    line-height: 1.5;
+                }
+
+                .no-results {
+                    background: rgba(17, 24, 39, 0.6);
+                    border: 1px solid rgba(255, 255, 255, 0.06);
+                    border-radius: 16px;
+                    padding: 3rem;
+                    text-align: center;
+                    animation: fadeIn 0.4s ease-out;
+                }
+
+                .no-results svg {
+                    color: var(--color-text-muted, #64748B);
+                    margin-bottom: 1rem;
+                }
+
+                .no-results h3 {
+                    font-family: var(--font-serif, 'Playfair Display', serif);
+                    color: var(--color-text-primary, #F8FAFC);
+                    margin: 0 0 0.5rem 0;
+                }
+
+                .no-results p {
+                    color: var(--color-text-muted, #64748B);
+                    margin: 0;
+                    max-width: 400px;
+                    margin: 0 auto;
+                }
+
+                .sidebar-column {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 1.25rem;
+                }
+
+                .info-card {
+                    background: rgba(17, 24, 39, 0.5);
+                    border: 1px solid rgba(255, 255, 255, 0.05);
+                    border-radius: 16px;
+                    padding: 1.5rem;
+                }
+
+                .info-icon {
+                    width: 48px;
+                    height: 48px;
+                    border-radius: 12px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin-bottom: 1rem;
+                }
+
+                .info-card.privacy .info-icon {
+                    background: rgba(16, 185, 129, 0.1);
+                    color: var(--color-success, #10B981);
+                }
+
+                .info-card.knowledge .info-icon {
+                    background: rgba(212, 175, 55, 0.1);
+                    color: var(--color-accent, #D4AF37);
+                }
+
+                .info-card.tips .info-icon {
+                    background: rgba(99, 102, 241, 0.1);
+                    color: var(--color-primary-light, #818CF8);
+                }
+
+                .info-card h4 {
+                    font-family: var(--font-serif, 'Playfair Display', serif);
+                    font-size: 1.05rem;
+                    color: var(--color-text-primary, #F8FAFC);
+                    margin: 0 0 0.5rem 0;
+                }
+
+                .info-card p {
+                    color: var(--color-text-muted, #64748B);
+                    font-size: 0.9rem;
+                    line-height: 1.6;
+                    margin: 0;
+                }
+
+                .info-card ul {
+                    list-style: none;
+                    padding: 0;
+                    margin: 0;
+                }
+
+                .info-card ul li {
+                    color: var(--color-text-muted, #64748B);
+                    font-size: 0.9rem;
+                    padding: 0.35rem 0;
+                    padding-left: 1rem;
                     position: relative;
                 }
 
-                .card-top-row { display: flex; justify-content: space-between; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem; }
-                .badges-group { display: flex; gap: 0.5rem; }
-                
-                .section-badge {
-                    background: rgba(245, 158, 11, 0.15); color: var(--color-accent);
-                    font-weight: 700; padding: 0.25rem 0.75rem; border-radius: 6px;
-                    font-size: 0.85rem; letter-spacing: 0.5px;
-                }
-                .type-badge {
-                    font-size: 0.75rem; background: rgba(255, 255, 255, 0.05);
-                    padding: 0.25rem 0.6rem; border-radius: 4px; color: var(--color-text-muted);
-                    display: flex; align-items: center;
+                .info-card ul li::before {
+                    content: '';
+                    position: absolute;
+                    left: 0;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    width: 4px;
+                    height: 4px;
+                    background: var(--color-primary-light, #818CF8);
+                    border-radius: 50%;
                 }
 
-                .confidence-wrapper { display: flex; align-items: center; gap: 0.75rem; }
-                .confidence-label { font-size: 0.8rem; color: var(--color-text-muted); }
-                .confidence-track { width: 80px; height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; }
-                .confidence-fill { height: 100%; border-radius: 10px; }
-                .confidence-fill.high { background: #10B981; }
-                .confidence-fill.med { background: #F59E0B; }
-                .confidence-fill.low { background: #EF4444; }
-                .confidence-val { font-size: 0.85rem; font-weight: 600; color: white; min-width: 3ch; }
+                @media (max-width: 1000px) {
+                    .main-layout {
+                        grid-template-columns: 1fr;
+                    }
 
-                .result-title { font-size: 1.25rem; margin-bottom: 0.5rem; color: white; font-weight: 600; font-family: var(--font-heading); }
-                .result-desc { color: var(--color-text-muted); margin-bottom: 1.5rem; line-height: 1.6; }
-
-                .punishment-box {
-                    background: rgba(245, 158, 11, 0.05); padding: 1rem;
-                    border-radius: 8px; border: 1px solid rgba(245, 158, 11, 0.1);
+                    .sidebar-column {
+                        display: none;
+                    }
                 }
-                .punishment-label {
-                    display: flex; align-items: center; gap: 0.5rem;
-                    font-size: 0.8rem; text-transform: uppercase;
-                    letter-spacing: 0.5px; color: var(--color-accent);
-                    margin-bottom: 0.5rem; font-weight: 600;
-                }
-                .punishment-box p { margin: 0; font-size: 0.95rem; color: #E2E8F0; line-height: 1.5; }
-                .text-accent { color: var(--color-accent); }
 
-                /* Sidebar */
-                .info-sidebar { display: flex; flex-direction: column; gap: 1.5rem; }
-                .info-card { padding: 1.5rem; }
-                .card-icon-wrapper { 
-                    width: 48px; height: 48px; border-radius: 10px; 
-                    display: flex; align-items: center; justify-content: center;
-                    margin-bottom: 1rem;
-                }
-                .card-icon-wrapper.success { background: rgba(16, 185, 129, 0.1); color: #10B981; }
-                .card-icon-wrapper.accent { background: rgba(245, 158, 11, 0.1); color: var(--color-accent); }
-                .card-icon-wrapper.danger { background: rgba(239, 68, 68, 0.1); color: #EF4444; }
+                @media (max-width: 600px) {
+                    .card-footer {
+                        flex-direction: column;
+                        gap: 1rem;
+                        align-items: stretch;
+                    }
 
-                .info-card h4 { font-size: 1.1rem; margin-bottom: 0.5rem; color: white; font-weight: 600; font-family: var(--font-heading); }
-                .info-card p { font-size: 0.9rem; color: var(--color-text-muted); line-height: 1.6; }
-                
-                .disclaimer-card { border-color: rgba(255, 255, 255, 0.05); background: transparent; }
-                .disclaimer-card h4 { color: var(--color-text-muted); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; }
-                .disclaimer-card p { font-size: 0.8rem; color: #64748B; }
+                    .helper {
+                        text-align: center;
+                        justify-content: center;
+                    }
 
-                /* Animations */
-                @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-                @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
-                @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-                .animate-fade-in { animation: fadeIn 0.5s ease-out; }
-                .animate-slide-up { animation: slideUp 0.4s ease-out; }
+                    .analyze-btn {
+                        justify-content: center;
+                    }
 
-                @media (max-width: 900px) {
-                    .grid-layout { grid-template-columns: 1fr; }
-                    .info-sidebar { display: none; }
+                    .result-top {
+                        flex-direction: column;
+                    }
+
+                    .confidence-meter {
+                        width: 100%;
+                    }
+
+                    .confidence-bar {
+                        flex: 1;
+                    }
                 }
             `}</style>
         </div>

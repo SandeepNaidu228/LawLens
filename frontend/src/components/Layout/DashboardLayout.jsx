@@ -11,34 +11,26 @@ const DashboardLayout = () => {
             </main>
 
             <style>{`
-                :root {
-                    --bg-dark: #0F172A;
-                    --bg-card: #1E293B;
-                    --text-main: #F8FAFC;
-                    --text-muted: #94A3B8;
-                }
-
                 .dashboard-layout {
                     min-height: 100vh;
-                    background-color: var(--bg-dark);
+                    background: var(--color-bg-dark, #080B14);
                     display: flex;
                 }
                 
                 .main-content {
-                    margin-left: 260px; /* Sidebar width */
+                    margin-left: 280px;
                     flex: 1;
-                    padding: 2.5rem;
+                    padding: 2.5rem 3rem;
                     min-height: 100vh;
-                    background-color: var(--bg-dark);
-                    color: var(--text-main);
+                    background: var(--color-bg-dark, #080B14);
+                    color: var(--color-text-primary, #F8FAFC);
                     position: relative;
                     overflow-x: hidden;
                 }
 
-                /* Mobile Responsiveness */
                 @media (max-width: 768px) {
                     .main-content {
-                        margin-left: 70px; /* Collapsed sidebar width */
+                        margin-left: 72px;
                         padding: 1.5rem;
                     }
                 }

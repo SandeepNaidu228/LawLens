@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Home, Compass, MessageSquare, Bug, Twitter, Mail, LogOut, Scale } from 'lucide-react';
+import { Home, Compass, MessageSquare, Bug, Twitter, Mail, LogOut, Scale, ChevronRight } from 'lucide-react';
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -14,233 +14,359 @@ const Sidebar = () => {
 
   const navItems = [
     {
-      category: 'GENERAL',
+      category: 'MAIN',
       items: [
-        { icon: <Home size={20} />, label: 'Home', path: '/dashboard' },
-        { icon: <Compass size={20} />, label: 'Discover', path: '/dashboard/discover' },
+        { icon: <Home size={20} />, label: 'Dashboard', path: '/dashboard' },
+        { icon: <Compass size={20} />, label: 'IPC Library', path: '/dashboard/discover' },
       ]
     },
     {
-      category: 'FEEDBACK',
+      category: 'SUPPORT',
       items: [
-        { icon: <MessageSquare size={20} />, label: 'Suggest Feature', path: '#' },
-        { icon: <Bug size={20} />, label: 'Report Bug', path: '#' },
+        { icon: <MessageSquare size={20} />, label: 'Feedback', path: '#' },
+        { icon: <Bug size={20} />, label: 'Report Issue', path: '#' },
       ]
     },
     {
-      category: 'SOCIAL',
+      category: 'CONNECT',
       items: [
         { icon: <Twitter size={20} />, label: 'Twitter', path: '#' },
-        { icon: <Mail size={20} />, label: 'Email', path: '#' },
+        { icon: <Mail size={20} />, label: 'Contact', path: '#' },
       ]
     }
   ];
 
   return (
-    <div className="sidebar">
-      {/* 1. Brand -> Landing Page */}
-      <Link to="/" className="sidebar-header">
-        <Scale size={28} className="text-accent" />
+    <aside className="sidebar">
+      <Link to="/" className="brand">
+        <div className="brand-icon">
+          <Scale size={22} />
+        </div>
         <span className="brand-name">LawLens</span>
       </Link>
 
-      <nav className="sidebar-nav">
+      <nav className="nav-container">
         {navItems.map((section, idx) => (
           <div key={idx} className="nav-section">
-            <h3 className="nav-section-title">{section.category}</h3>
-            {section.items.map((item, i) => (
-              <NavLink
-                key={i}
-                to={item.path}
-                className={({ isActive }) =>
-                  `nav-item ${isActive && item.path !== '#' ? 'active' : ''}`
-                }
-                end={item.path === '/dashboard'}
-              >
-                {item.icon}
-                <span>{item.label}</span>
-              </NavLink>
-            ))}
+            <span className="section-label">{section.category}</span>
+            <ul className="nav-list">
+              {section.items.map((item, i) => (
+                <li key={i}>
+                  <NavLink
+                    to={item.path}
+                    className={({ isActive }) =>
+                      `nav-link ${isActive && item.path !== '#' ? 'active' : ''}`
+                    }
+                    end={item.path === '/dashboard'}
+                  >
+                    <span className="nav-icon">{item.icon}</span>
+                    <span className="nav-label">{item.label}</span>
+                    <ChevronRight size={14} className="nav-arrow" />
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
           </div>
         ))}
       </nav>
 
       <div className="sidebar-footer">
-        {/* 2. User Profile -> Profile Page */}
-        <Link to="/dashboard/profile" className="user-profile">
+        <Link to="/dashboard/profile" className="user-card">
           {user?.picture ? (
-            <img src={user.picture} alt="Avatar" className="avatar-img" />
+            <img src={user.picture} alt="Avatar" className="user-avatar-img" />
           ) : (
-            <div className="avatar">{user?.name?.charAt(0) || 'U'}</div>
+            <div className="user-avatar">{user?.name?.charAt(0) || 'U'}</div>
           )}
-          <div className="user-info">
-            <span className="name">{user?.name || 'Guest User'}</span>
-            <span className="role">Free Plan</span>
+          <div className="user-details">
+            <span className="user-name">{user?.name || 'Guest User'}</span>
+            <span className="user-plan">Free Plan</span>
           </div>
         </Link>
 
-        {/* 3. Sign Out -> Landing Page */}
-        <button onClick={handleSignOut} className="logout-btn">
-          <LogOut size={20} />
+        <button onClick={handleSignOut} className="logout-btn" title="Sign Out">
+          <LogOut size={18} />
         </button>
       </div>
 
       <style>{`
-                :root {
-                    --bg-sidebar: rgba(15, 23, 42, 0.95);
-                    --color-border: rgba(255, 255, 255, 0.1);
-                    --color-accent: #F59E0B;
-                    --color-primary: #3B82F6;
-                    --text-main: #F8FAFC;
-                    --text-muted: #94A3B8;
-                    --font-heading: 'Merriweather', serif;
-                    --font-body: 'Inter', sans-serif;
-                }
+        .sidebar {
+          width: 280px;
+          height: 100vh;
+          background: var(--color-bg-elevated, #0D1220);
+          border-right: 1px solid rgba(255, 255, 255, 0.05);
+          display: flex;
+          flex-direction: column;
+          position: fixed;
+          left: 0;
+          top: 0;
+          z-index: 50;
+          padding: 1.5rem;
+        }
 
-                .sidebar {
-                    width: 260px;
-                    height: 100vh;
-                    background: var(--bg-sidebar);
-                    border-right: 1px solid var(--color-border);
-                    display: flex;
-                    flex-direction: column;
-                    padding: 1.5rem;
-                    position: fixed;
-                    left: 0;
-                    top: 0;
-                    z-index: 50;
-                    backdrop-filter: blur(10px);
-                }
+        .brand {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          text-decoration: none;
+          padding: 0.5rem;
+          margin-bottom: 2rem;
+          border-radius: 12px;
+          transition: all 0.2s ease;
+        }
 
-                /* Header */
-                .sidebar-header {
-                    display: flex;
-                    align-items: center;
-                    gap: 0.75rem;
-                    margin-bottom: 2.5rem;
-                    padding-left: 0.5rem;
-                    text-decoration: none;
-                    transition: opacity 0.2s;
-                }
-                .sidebar-header:hover { opacity: 0.8; }
+        .brand:hover {
+          background: rgba(255, 255, 255, 0.03);
+        }
 
-                .brand-name {
-                    font-family: var(--font-heading);
-                    font-weight: 700;
-                    font-size: 1.5rem;
-                    color: var(--text-main);
-                    letter-spacing: -0.02em;
-                }
-                .text-accent { color: var(--color-accent); }
+        .brand-icon {
+          width: 40px;
+          height: 40px;
+          background: linear-gradient(135deg, var(--color-accent, #D4AF37) 0%, #B8860B 100%);
+          border-radius: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #080B14;
+        }
 
-                /* Navigation */
-                .nav-section { margin-bottom: 2rem; }
+        .brand-name {
+          font-family: var(--font-serif, 'Playfair Display', serif);
+          font-weight: 700;
+          font-size: 1.35rem;
+          color: var(--color-text-primary, #F8FAFC);
+          letter-spacing: -0.02em;
+        }
 
-                .nav-section-title {
-                    font-size: 0.7rem;
-                    font-weight: 700;
-                    color: rgba(148, 163, 184, 0.6);
-                    margin-bottom: 0.75rem;
-                    padding-left: 0.75rem;
-                    letter-spacing: 1px;
-                    text-transform: uppercase;
-                }
+        .nav-container {
+          flex: 1;
+          overflow-y: auto;
+        }
 
-                .nav-item {
-                    display: flex;
-                    align-items: center;
-                    gap: 0.75rem;
-                    padding: 0.75rem;
-                    color: var(--text-muted);
-                    border-radius: 8px;
-                    transition: all 0.2s;
-                    font-weight: 500;
-                    text-decoration: none;
-                    font-family: var(--font-body);
-                    font-size: 0.95rem;
-                }
+        .nav-section {
+          margin-bottom: 1.75rem;
+        }
 
-                .nav-item:hover {
-                    background: rgba(255, 255, 255, 0.05);
-                    color: var(--text-main);
-                }
+        .section-label {
+          display: block;
+          font-size: 0.7rem;
+          font-weight: 600;
+          color: var(--color-text-subtle, #475569);
+          text-transform: uppercase;
+          letter-spacing: 1.2px;
+          padding: 0 0.5rem;
+          margin-bottom: 0.75rem;
+        }
 
-                .nav-item.active {
-                    background: rgba(245, 158, 11, 0.1); /* Gold tint */
-                    color: var(--color-accent);
-                    font-weight: 600;
-                }
+        .nav-list {
+          list-style: none;
+          padding: 0;
+          margin: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem;
+        }
 
-                /* Footer */
-                .sidebar-footer {
-                    margin-top: auto;
-                    border-top: 1px solid var(--color-border);
-                    padding-top: 1.5rem;
-                    display: flex;
-                    align-items: center;
-                    justify-content: space-between;
-                }
-                
-                .user-profile {
-                    display: flex;
-                    align-items: center;
-                    gap: 0.75rem;
-                    text-decoration: none;
-                    flex: 1;
-                    padding: 0.5rem;
-                    border-radius: 8px;
-                    transition: background 0.2s;
-                }
-                .user-profile:hover {
-                    background: rgba(255,255,255,0.05);
-                }
+        .nav-link {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          padding: 0.75rem 0.75rem;
+          color: var(--color-text-muted, #64748B);
+          border-radius: 10px;
+          text-decoration: none;
+          transition: all 0.2s ease;
+          position: relative;
+        }
 
-                .avatar {
-                    width: 36px; height: 36px;
-                    background: var(--color-primary);
-                    border-radius: 50%;
-                    display: flex; align-items: center; justify-content: center;
-                    font-weight: 700; font-size: 0.85rem;
-                    color: white;
-                }
-                
-                .avatar-img {
-                    width: 36px; height: 36px;
-                    border-radius: 50%;
-                    object-fit: cover;
-                }
+        .nav-link:hover {
+          background: rgba(255, 255, 255, 0.04);
+          color: var(--color-text-primary, #F8FAFC);
+        }
 
-                .user-info {
-                    display: flex; flex-direction: column;
-                }
-                .name { font-size: 0.9rem; font-weight: 600; color: var(--text-main); }
-                .role { font-size: 0.75rem; color: var(--text-muted); }
-                
-                .logout-btn {
-                    background: transparent;
-                    border: none;
-                    color: var(--text-muted);
-                    cursor: pointer;
-                    padding: 0.5rem;
-                    border-radius: 6px;
-                    transition: 0.2s;
-                }
-                
-                .logout-btn:hover {
-                    background: rgba(239, 68, 68, 0.1);
-                    color: #EF4444;
-                }
+        .nav-link.active {
+          background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(99, 102, 241, 0.05) 100%);
+          color: var(--color-primary-light, #818CF8);
+        }
 
-                @media (max-width: 768px) {
-                    .sidebar { width: 70px; padding: 1.5rem 0.5rem; align-items: center; }
-                    .brand-name, .nav-item span, .nav-section-title, .user-info { display: none; }
-                    .sidebar-header { margin-bottom: 2rem; padding-left: 0; }
-                    .nav-item { justify-content: center; padding: 0.75rem; }
-                    .sidebar-footer { flex-direction: column; gap: 1rem; }
-                    .user-profile { padding: 0; justify-content: center; }
-                }
-            `}</style>
-    </div>
+        .nav-link.active::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 3px;
+          height: 60%;
+          background: var(--color-primary, #6366F1);
+          border-radius: 0 2px 2px 0;
+        }
+
+        .nav-icon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
+
+        .nav-label {
+          flex: 1;
+          font-size: 0.95rem;
+          font-weight: 500;
+        }
+
+        .nav-arrow {
+          opacity: 0;
+          transform: translateX(-4px);
+          transition: all 0.2s ease;
+          color: var(--color-text-subtle, #475569);
+        }
+
+        .nav-link:hover .nav-arrow {
+          opacity: 1;
+          transform: translateX(0);
+        }
+
+        .sidebar-footer {
+          padding-top: 1rem;
+          border-top: 1px solid rgba(255, 255, 255, 0.05);
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+        }
+
+        .user-card {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          padding: 0.6rem;
+          border-radius: 10px;
+          text-decoration: none;
+          transition: all 0.2s ease;
+        }
+
+        .user-card:hover {
+          background: rgba(255, 255, 255, 0.04);
+        }
+
+        .user-avatar {
+          width: 38px;
+          height: 38px;
+          background: linear-gradient(135deg, var(--color-primary, #6366F1) 0%, var(--color-primary-dark, #4F46E5) 100%);
+          border-radius: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 700;
+          font-size: 0.9rem;
+          color: white;
+          flex-shrink: 0;
+        }
+
+        .user-avatar-img {
+          width: 38px;
+          height: 38px;
+          border-radius: 10px;
+          object-fit: cover;
+          flex-shrink: 0;
+        }
+
+        .user-details {
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+        }
+
+        .user-name {
+          font-size: 0.9rem;
+          font-weight: 600;
+          color: var(--color-text-primary, #F8FAFC);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .user-plan {
+          font-size: 0.75rem;
+          color: var(--color-text-muted, #64748B);
+        }
+
+        .logout-btn {
+          width: 38px;
+          height: 38px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: rgba(255, 255, 255, 0.03);
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          border-radius: 10px;
+          color: var(--color-text-muted, #64748B);
+          cursor: pointer;
+          transition: all 0.2s ease;
+          flex-shrink: 0;
+        }
+
+        .logout-btn:hover {
+          background: rgba(239, 68, 68, 0.1);
+          border-color: rgba(239, 68, 68, 0.2);
+          color: var(--color-danger, #EF4444);
+        }
+
+        @media (max-width: 768px) {
+          .sidebar {
+            width: 72px;
+            padding: 1rem 0.75rem;
+            align-items: center;
+          }
+
+          .brand {
+            padding: 0;
+            margin-bottom: 1.5rem;
+          }
+
+          .brand-name,
+          .nav-label,
+          .nav-arrow,
+          .section-label,
+          .user-details {
+            display: none;
+          }
+
+          .brand-icon {
+            width: 44px;
+            height: 44px;
+          }
+
+          .nav-link {
+            justify-content: center;
+            padding: 0.85rem;
+          }
+
+          .nav-link.active::before {
+            display: none;
+          }
+
+          .sidebar-footer {
+            flex-direction: column;
+            gap: 0.5rem;
+          }
+
+          .user-card {
+            padding: 0;
+          }
+
+          .user-avatar,
+          .user-avatar-img {
+            width: 44px;
+            height: 44px;
+          }
+
+          .logout-btn {
+            width: 44px;
+            height: 44px;
+          }
+        }
+      `}</style>
+    </aside>
   );
 };
 
