@@ -1,83 +1,36 @@
-import React, { useState } from 'react';
-import { Search, ChevronRight, X, Gavel, Shield, AlertTriangle, Book } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { ChevronRight, X, Gavel, Shield, AlertTriangle, Book } from 'lucide-react';
 
-const mockIPC = [
-    { 
-        id: 'ipc-500', 
-        section: 'Section 500', 
-        title: 'Punishment for Defamation', 
-        desc: 'Punishment for defamation with simple imprisonment for a term which may extend to two years, or with fine, or with both.',
-        type: 'Non-Cognizable',
-        bailable: 'Bailable'
-    },
-    { 
-        id: 'ipc-302', 
-        section: 'Section 302', 
-        title: 'Punishment for Murder', 
-        desc: 'Whoever commits murder shall be punished with death, or imprisonment for life, and shall also be liable to fine.',
-        type: 'Cognizable',
-        bailable: 'Non-Bailable'
-    },
-    { 
-        id: 'ipc-378', 
-        section: 'Section 378', 
-        title: 'Theft', 
-        desc: 'Whoever, intending to take dishonestly any movable property out of the possession of any person without that person\'s consent, moves that property in order to such taking, is said to commit theft.',
-        type: 'Cognizable',
-        bailable: 'Non-Bailable'
-    },
-    { 
-        id: 'ipc-420', 
-        section: 'Section 420', 
-        title: 'Cheating and Dishonestly Inducing Delivery', 
-        desc: 'Whoever cheats and thereby dishonestly induces the person deceived to deliver any property to any person, or to make, alter or destroy the whole or any part of a valuable security.',
-        type: 'Cognizable',
-        bailable: 'Non-Bailable'
-    },
-    { 
-        id: 'ipc-124a', 
-        section: 'Section 124A', 
-        title: 'Sedition', 
-        desc: 'Whoever, by words, either spoken or written, or by signs, or by visible representation, or otherwise, brings or attempts to bring into hatred or contempt the Government established by law.',
-        type: 'Cognizable',
-        bailable: 'Non-Bailable'
-    },
-];
+// Importing the dataset directly from the local file
+import ipcDataRaw from '../../../../semantic-search/ipc_sections.json';
 
 const Discover = () => {
-    const [searchTerm, setSearchTerm] = useState('');
+    // Only state needed is for the selected modal item
     const [selectedIPC, setSelectedIPC] = useState(null);
 
-    const filteredIPC = mockIPC.filter(item =>
-        item.section.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.title.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    // Sort the data by IPC Section Number numerically/naturally
+    const sortedIPC = useMemo(() => {
+        return [...ipcDataRaw].sort((a, b) => {
+            // Remove "Section " prefix to get "140", "120B", etc.
+            const secA = a.section.replace('Section ', '').trim();
+            const secB = b.section.replace('Section ', '').trim();
+            
+            // Use localeCompare with numeric: true for natural sorting 
+            // (e.g., puts 2 before 10, and 120A after 120)
+            return secA.localeCompare(secB, undefined, { numeric: true, sensitivity: 'base' });
+        });
+    }, []);
 
     return (
         <div className="discover-container animate-fade-in">
             <header className="page-header">
                 <h1>IPC Library</h1>
-                <p className="subtitle">Search the authoritative database of Indian Penal Code sections.</p>
+                <p className="subtitle">Browse the complete registry of Indian Penal Code sections.</p>
             </header>
 
-            {/* Large Search Area */}
-            <div className="search-section">
-                <div className="search-bar-wrapper">
-                    <Search className="search-icon" size={22} />
-                    <input
-                        type="text"
-                        className="search-input"
-                        placeholder="Search by Section Number (e.g. 302) or Offense Name..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                </div>
-                <p className="search-hint">Try searching for "Theft", "Fraud", or specific section numbers.</p>
-            </div>
-
-            {/* Grid Results */}
+            {/* Grid Results - Displaying SORTED sections */}
             <div className="ipc-grid">
-                {filteredIPC.map((ipc) => (
+                {sortedIPC.map((ipc) => (
                     <div key={ipc.id} className="ipc-card" onClick={() => setSelectedIPC(ipc)}>
                         <div className="card-header">
                             <span className="section-badge">{ipc.section}</span>
@@ -92,12 +45,6 @@ const Discover = () => {
                         </div>
                     </div>
                 ))}
-                {filteredIPC.length === 0 && (
-                     <div className="empty-state">
-                         <Book size={48} className="empty-icon"/>
-                         <p>No IPC sections found matching "{searchTerm}"</p>
-                     </div>
-                )}
             </div>
 
             {/* Detailed Modal Overlay */}
@@ -107,7 +54,7 @@ const Discover = () => {
                         <button className="close-btn" onClick={() => setSelectedIPC(null)}>
                             <X size={24} />
                         </button>
-                        
+
                         <div className="modal-header">
                             <span className="modal-section-badge">{selectedIPC.section}</span>
                             <h2>{selectedIPC.title}</h2>
@@ -139,7 +86,7 @@ const Discover = () => {
                             </div>
 
                             <div className="punishment-section">
-                                <h4><Gavel size={16}/> Punishment Prescribed</h4>
+                                <h4><Gavel size={16} /> Punishment Prescribed</h4>
                                 <p>Imprisonment for a term which may extend to the duration specified in the specific subsection, or fine, or both.</p>
                             </div>
                         </div>
@@ -175,38 +122,6 @@ const Discover = () => {
                     color: var(--color-text-main);
                 }
                 .subtitle { color: var(--color-text-muted); font-size: 1.1rem; }
-
-                /* Search Area */
-                .search-section { margin-bottom: 3rem; display: flex; flex-direction: column; align-items: center; }
-                .search-bar-wrapper { 
-                    position: relative; 
-                    width: 100%;
-                    max-width: 600px; 
-                }
-                .search-icon { 
-                    position: absolute; 
-                    left: 1.5rem; 
-                    top: 50%; 
-                    transform: translateY(-50%); 
-                    color: var(--color-text-muted); 
-                }
-                .search-input {
-                    width: 100%;
-                    background: var(--color-bg-card);
-                    border: 1px solid var(--color-border);
-                    padding: 1.25rem 1.25rem 1.25rem 4rem;
-                    border-radius: 50px;
-                    color: white;
-                    font-size: 1.1rem;
-                    transition: all 0.2s;
-                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-                }
-                .search-input:focus {
-                    outline: none;
-                    border-color: var(--color-primary);
-                    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-                }
-                .search-hint { margin-top: 1rem; font-size: 0.85rem; color: #64748B; }
 
                 /* Grid */
                 .ipc-grid {
@@ -278,13 +193,6 @@ const Discover = () => {
                     color: var(--color-text-muted);
                     display: flex; align-items: center; gap: 5px;
                 }
-                
-                .empty-state {
-                    grid-column: 1 / -1;
-                    text-align: center; padding: 4rem;
-                    color: var(--color-text-muted);
-                }
-                .empty-icon { opacity: 0.2; margin-bottom: 1rem; }
 
                 /* Modal Overlay */
                 .modal-backdrop {

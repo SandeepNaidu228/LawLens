@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { 
-    Send, 
-    AlertTriangle, 
-    BookOpen, 
-    ShieldCheck, 
-    Activity, 
-    Info, 
+import {
+    Send,
+    AlertTriangle,
+    BookOpen,
+    ShieldCheck,
+    Activity,
+    Info,
     Scale,
     Gavel
 } from 'lucide-react';
@@ -15,43 +15,54 @@ const Home = () => {
     const [results, setResults] = useState(null);
     const [loading, setLoading] = useState(false);
 
-    const handleAnalyze = () => {
+    const handleAnalyze = async () => {
         if (!description.trim()) return;
 
         setLoading(true);
-        // Simulate AI Processing Delay
-        setTimeout(() => {
-            setResults([
-                {
-                    section: 'Section 378',
-                    title: 'Theft',
-                    confidence: 94,
-                    explanation: 'The intent to dishonestly take movable property out of possession without consent aligns with the definition of Theft.',
-                    punishment: 'Imprisonment of up to 3 years, or fine, or both.',
-                    type: 'Cognizable',
-                    bailable: 'Non-Bailable'
+        setResults(null);
+        try {
+            const response = await fetch('http://127.0.0.1:8001/analyze', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
                 },
-                {
-                    section: 'Section 420',
-                    title: 'Cheating',
-                    confidence: 76,
-                    explanation: 'If the accused induced delivery of property through deception, this section applies.',
-                    punishment: 'Imprisonment of up to 7 years and fine.',
-                    type: 'Cognizable',
-                    bailable: 'Non-Bailable'
-                },
-                {
-                    section: 'Section 403',
-                    title: 'Dishonest Misappropriation',
-                    confidence: 55,
-                    explanation: 'Applicable if the property was found rather than taken from possession.',
-                    punishment: 'Imprisonment of up to 2 years, or fine, or both.',
-                    type: 'Non-Cognizable',
-                    bailable: 'Bailable'
-                }
-            ]);
+                body: JSON.stringify({ description }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Analysis failed');
+            }
+
+            const data = await response.json();
+
+            if (data.status === 'no_clear_match') {
+                setResults([]); // Handle no match gracefully or show a message
+                // You might want to show the message from backend: data.message
+                // For now, setting empty results or specific handling
+                alert(data.message); // Simple feedback
+            } else {
+                // Map backend response to frontend expectations if necessary
+                // Backend returns: results: [{ipc_section, offense, confidence, explanation, punishment, cognizable, bailable, ...}]
+                // Frontend expects: {section, title, confidence, explanation, punishment, type, bailable}
+
+                const mappedResults = (data.results || []).map(item => ({
+                    section: 'Section ' + item.ipc_section,
+                    title: item.offense,
+                    confidence: item.confidence,
+                    explanation: item.explanation,
+                    punishment: item.punishment,
+                    type: item.cognizable, // 'type' in frontend seems to map to 'Cognizable'
+                    bailable: item.bailable
+                }));
+                setResults(mappedResults);
+            }
+
+        } catch (error) {
+            console.error('Error analyzing incident:', error);
+            alert('Failed to analyze incident. Please ensure the backend server is running.');
+        } finally {
             setLoading(false);
-        }, 1800);
+        }
     };
 
     return (
@@ -64,7 +75,7 @@ const Home = () => {
             <div className="grid-layout">
                 {/* Main Input & Results Column */}
                 <div className="main-panel">
-                    
+
                     {/* Input Card */}
                     <div className="card input-card">
                         <div className="input-header">
@@ -81,7 +92,7 @@ const Home = () => {
                         />
                         <div className="action-row">
                             <span className="helper-text">
-                                <Info size={14} className="inline-icon"/> Be specific about actions and intent.
+                                <Info size={14} className="inline-icon" /> Be specific about actions and intent.
                             </span>
                             <button
                                 className={`btn-primary ${loading ? 'pulsing' : ''}`}
@@ -100,7 +111,7 @@ const Home = () => {
                                 <h3>Analysis Report</h3>
                                 <span className="meta-tag">{results.length} Sections Found</span>
                             </div>
-                            
+
                             <div className="results-list">
                                 {results.map((item, index) => (
                                     <div key={index} className="result-card">
@@ -112,21 +123,21 @@ const Home = () => {
                                             <div className="confidence-wrapper">
                                                 <span className="confidence-label">Match:</span>
                                                 <div className="confidence-track">
-                                                    <div 
-                                                        className={`confidence-fill ${item.confidence > 80 ? 'high' : item.confidence > 60 ? 'med' : 'low'}`} 
-                                                        style={{width: `${item.confidence}%`}}
+                                                    <div
+                                                        className={`confidence-fill ${item.confidence > 80 ? 'high' : item.confidence > 60 ? 'med' : 'low'}`}
+                                                        style={{ width: `${item.confidence}%` }}
                                                     ></div>
                                                 </div>
                                                 <span className="confidence-val">{item.confidence}%</span>
                                             </div>
                                         </div>
-                                        
+
                                         <h4 className="result-title">{item.title}</h4>
                                         <p className="result-desc">{item.explanation}</p>
-                                        
+
                                         <div className="punishment-box">
                                             <div className="punishment-label">
-                                                <Gavel size={14} className="text-accent"/> Legal Consequence
+                                                <Gavel size={14} className="text-accent" /> Legal Consequence
                                             </div>
                                             <p>{item.punishment}</p>
                                         </div>
@@ -154,7 +165,7 @@ const Home = () => {
                         <h4>Understanding IPC</h4>
                         <p>The IPC (Indian Penal Code) is the official criminal code of India. This tool maps semantic intent to legal text.</p>
                     </div>
-                    
+
                     {/* <div className="card info-card disclaimer-card">
                         <div className="card-icon-wrapper danger">
                             <AlertTriangle size={24} />

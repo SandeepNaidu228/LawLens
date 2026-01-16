@@ -1,0 +1,31 @@
+# ======================
+# Python (ML backend)
+# ======================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+
+# Virtual environments
+venv/
+.env/
+
+# ======================
+# Node / Frontend
+# ======================
+node_modules/
+dist/
+build/
+
+# ======================
+# IDEs / Editors
+# ======================
+.vscode/
+.idea/
+
+# ======================
+# OS files
+# ======================
+.DS_Store
+Thumbs.db
