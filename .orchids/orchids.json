@@ -1,0 +1,8 @@
+{
+  "projectId": "7c12bfa6-c854-43c2-a2ea-d38dafaf7cbe",
+  "createdAt": 1768561995389,
+  "startupCommands": [
+    "cd C:\\Users\\mvnsa\\Downloads\\LawLens\\frontend && npm install && bun run dev",
+    "cd C:\\Users\\mvnsa\\Downloads\\LawLens\\semantic-search && uvicorn api:app --reload --port 8000"
+  ]
+}
