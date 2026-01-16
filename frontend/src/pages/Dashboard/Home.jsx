@@ -21,7 +21,8 @@ const Home = () => {
         setLoading(true);
         setResults(null);
         try {
-            const response = await fetch('https://lawlens-backend.onrender.com/analyze', {
+            const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8001';
+            const response = await fetch(`${baseUrl}/analyze`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

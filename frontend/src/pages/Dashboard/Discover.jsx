@@ -1,43 +1,16 @@
 import React, { useState, useMemo } from 'react';
 import { ChevronRight, X, Gavel, Shield, AlertTriangle, Book } from 'lucide-react';
 
+// Importing the dataset directly from the local file
+import ipcDataRaw from '../../../../semantic-search/ipc_sections.json';
+
 const Discover = () => {
     // Only state needed is for the selected modal item
-    const [searchTerm, setSearchTerm] = useState('');
     const [selectedIPC, setSelectedIPC] = useState(null);
-    const [ipcData, setIpcData] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-
-    React.useEffect(() => {
-        const fetchSections = async () => {
-            try {
-                const response = await fetch('https://lawlens-backend.onrender.com/sections');
-                if (!response.ok) {
-                    throw new Error('Failed to fetch IPC sections');
-                }
-                const data = await response.json();
-                setIpcData(data);
-            } catch (err) {
-                console.error("Error fetching sections:", err);
-                setError("Could not load IPC sections. Please ensure backend is running.");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchSections();
-    }, []);
 
     // Sort the data by IPC Section Number numerically/naturally
     const sortedIPC = useMemo(() => {
-        // Filter first
-        const filtered = ipcData.filter(item =>
-            item.section.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            item.title.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-
-        return [...filtered].sort((a, b) => {
+        return [...ipcDataRaw].sort((a, b) => {
             // Remove "Section " prefix to get "140", "120B", etc.
             const secA = a.section.replace('Section ', '').trim();
             const secB = b.section.replace('Section ', '').trim();
@@ -46,10 +19,7 @@ const Discover = () => {
             // (e.g., puts 2 before 10, and 120A after 120)
             return secA.localeCompare(secB, undefined, { numeric: true, sensitivity: 'base' });
         });
-    }, [ipcData, searchTerm]);
-
-    if (loading) return <div style={{ padding: "2rem", color: "white", textAlign: "center" }}>Loading IPC Library...</div>;
-    if (error) return <div style={{ padding: "2rem", color: "#EF4444", textAlign: "center" }}>{error}</div>;
+    }, []);
 
     return (
         <div className="discover-container animate-fade-in">
